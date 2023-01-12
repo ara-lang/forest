@@ -5,7 +5,7 @@ use ara_parser::tree::TreeMap;
 use ara_reporting::{Report, ReportFooter};
 use ara_source::SourceMap;
 
-use crate::analyzer::code_info::symbol_storage::CodeBaseSymbols;
+use crate::analyzer::code_info::definition_reference_storage::DefinitionReferenceStorage;
 use crate::analyzer::visitor::assign_to_this::AssignToThis;
 use crate::analyzer::visitor::assign_to_unwriteable_expression::AssignToUnwriteableExpression;
 use crate::analyzer::visitor::await_in_loop::AwaitInLoop;
@@ -38,7 +38,7 @@ pub mod visitor;
 
 pub struct AnalysisReport {
     pub report: Option<Report>,
-    pub symbols: CodeBaseSymbols,
+    pub definitions_storage: DefinitionReferenceStorage,
 }
 
 pub struct Analyzer<'a> {
@@ -84,10 +84,10 @@ impl<'a> Analyzer<'a> {
             ],
         )?;
 
-        let (symbols, mut symbol_issues) =
-            code_info::symbol_collector::collect_symbols(&collector.definitions);
+        let (definitions_storage, mut definitions_issues) =
+            code_info::definition_reference_collector::collect_definitions(&collector.definitions);
 
-        issues.append(&mut symbol_issues);
+        issues.append(&mut definitions_issues);
 
         let report = build_report(&self.config, issues);
         let should_continue = if let Some(report) = &report {
@@ -97,7 +97,10 @@ impl<'a> Analyzer<'a> {
         };
 
         if !should_continue {
-            return Ok(AnalysisReport { report, symbols });
+            return Ok(AnalysisReport {
+                report,
+                definitions_storage,
+            });
         }
 
         todo!();

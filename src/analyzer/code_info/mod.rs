@@ -1,3 +1,3 @@
-pub mod symbol_storage;
-pub mod symbol_collector;
+pub mod definition_reference_storage;
+pub mod definition_reference_collector;
 pub mod reflection;
