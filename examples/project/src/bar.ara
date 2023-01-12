@@ -1,0 +1,16 @@
+namespace foo;
+
+final class foo {
+    public function __construct()
+    {
+        $this = 1;
+
+        static function(): void {} = 1;
+
+        {
+            $foo = 2;
+        }
+
+        return 1;
+    }
+}

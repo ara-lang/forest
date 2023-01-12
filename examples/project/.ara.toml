@@ -1,0 +1,10 @@
+[project]
+source = "src/"
+target = "target/"
+
+[[definitions]]
+path = "definitions/"
+
+[reporting]
+style = "default"
+color = "always"

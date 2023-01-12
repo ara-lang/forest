@@ -1,0 +1,92 @@
+namespace Qux;
+
+function a(string $a = 'a', string $b): string {}
+
+final class A {
+    public function __construct(string $a = 'a', string $b) {}
+
+    public function a(string $a = 'a', string $b): string {}
+}
+
+function b(string $a, string ...$b, string $c): string {}
+
+final class B {
+    public function __construct(string $a, string ...$b, string $c) {}
+
+    public function b(string $a, string ...$b, string $c): string {}
+}
+
+function c(string $a, string ...$b, string ...$c): string {}
+
+final class C {
+    public function __construct(string $a, string ...$b, string ...$c) {}
+
+    public function c(string $a, string ...$b, string ...$c = 1): string {}
+}
+
+
+function foo0(): void {
+    return;
+}
+
+function foo1(): void {
+    return 1;
+}
+
+function foo2(): void {
+    1
+}
+
+function bar3(): void {
+    static function(): void {
+        return 1;
+    };
+}
+
+function bar4(): void {
+    static function(): int {
+        return 1;
+    };
+}
+
+class testing {
+    public function __construct() {
+        $a = static function(): int {
+            return 1;
+        };
+    }
+}
+
+function foo01(): never {
+    return;
+}
+
+function foo11(): never {
+    return 1;
+}
+
+function foo21(): never {
+    1
+}
+
+function bar13(): never {
+    static function(): never {
+        return 1;
+    };
+}
+
+function bar2(): never {
+    static function(): int {
+        return 1;
+    };
+}
+
+function OooOo(string $a, string $a = 1, bool $this, int $that, int ...$this): void {
+    try {
+
+    } finally {
+        $this = 1;
+
+        return $that;
+    }
+}

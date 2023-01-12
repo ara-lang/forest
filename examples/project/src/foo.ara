@@ -1,0 +1,263 @@
+class foo {
+    const bar = 1;
+    private string $BAZ;
+    public function hello_world(): void {}
+}
+abstract class Bar { abstract public function hello_world(): void; }
+interface qux {}
+enum quux {}
+enum quuz: int {}
+const fooBar = 1;
+function fooBar(int $foo = 1, string $BarFoo): void {}
+function bar(): void {
+    while true {
+        if something() {
+            await $q;
+        }
+        await $bar;
+    }
+}
+
+function baz(): void {
+    new class() {};
+    $e = new Qux();
+    $a || $b;
+    $a | $b;
+    $a + $b;
+    $a < $b;
+    $a ? $b : $c;
+    $a ? function(): void {} : new Bar();
+    $a ? foo() : 1 + 2;
+    $a ? foo() : bar();
+    $a ? 1 + 2 : foo();
+    $a ?: 1;
+    $a ?: foo();
+    $a->foo(...);
+    bar(...);
+    A::foo(...);
+    clone $f;
+    new Bar();
+    $x as Bar;
+    $x instanceof Bar;
+    $x is Bar;
+    $x into Bar;
+    $x in $f;
+    isset $x;
+    $x[1];
+    $x[];
+}
+
+function a(): void {
+    $a[];
+    $a[];
+    yield $a[];
+    yield from $a[];
+    yield $a[] => $b[];
+    $a[] += $b[];
+    $a[]();
+    $a[]->foo();
+    $a[]->foo(...);
+    $a[]->foo;
+    $a[]::foo();
+    $a[]::foo(...);
+    $a[]::$foo;
+    $a[]::foo;
+    exit($a[]);
+    foo($a[]);
+    $a->b($c[]);
+    $a::b($c[]);
+    $a->b->c($d[]);
+
+    if $a[] {   }
+
+    while $a[] { }
+
+    do { } while $a[];
+
+    for $a[]; $b[]; $c[] {}
+
+    foreach $a[] as $b { }
+
+    match $a[] {
+        $b[] => $c[],
+        $d[] => $e[],
+    };
+
+    $a = $b;
+    $a = $a = $b;
+
+    if $a = $foo {}
+
+    if $a /= $foo { }
+
+    if $a != $foo {  }
+
+    $a ??= $c = $b;
+
+    match $a = $b {
+        $c = $d => $e = $f,
+        $g = $h => $i = $j,
+    };
+
+    do {   } while $a = $b;
+
+    while $a = $b {  }
+
+    for $a = $b; $c = $d; $e = $f { }
+
+    foreach $a = $b as $c {}
+}
+
+function foo(): 1 {
+    return 1;
+
+    bar();
+}
+
+function foo2(): 2 {
+    2
+
+    bar();
+}
+
+function foo3(): 3 {
+    while true {
+        break;
+
+        bar();
+    }
+
+    return 3;
+}
+
+function foo4(): 4 {
+    while true {
+        continue;
+
+        bar();
+    }
+
+    return 4;
+}
+
+function foo5(): 5 {
+    throw new Exception();
+
+    hello_world();
+    bar();
+
+    while true {
+        do_that();
+    }
+}
+
+function foo6(): 6 {
+    {
+        return 6;
+    }
+
+    exit(6);
+
+    if something() {
+
+    } else {
+
+    }
+
+    bar();
+}
+
+function bar(): void {
+    if throw something() {
+
+    }
+
+    while throw something() {
+
+    }
+
+    do {
+
+    } while throw something();
+
+    for throw something(); throw something(); throw something() {
+
+    }
+
+    foreach throw something() as $x {
+
+    }
+
+    match throw something() {
+        throw something() => throw something(),
+        throw something() => throw something(),
+    };
+
+    throw something();
+}
+
+function nqux(): void {
+    for $a = 1; $a = 2; $a = 3 {
+
+    }
+}
+
+function foo(): void {
+    $_ = $a + $b;
+
+    $_ = null 
+        + false 
+        + (1, 2, 3)
+    ;
+
+    
+        ++($a);
+        ++false ;
+
+        --($a);
+}
+
+function too_many_type_arg_for_vec(): vec<int, string> {
+    return vec[
+        1,
+        2,
+        3,
+    ];
+}
+
+function too_few_type_arg_for_dict(): dict<int> {
+    return dict[
+        1 => 2,
+        3 => 4,
+    ];
+}
+
+function too_many_type_arg_for_dict(): dict<int, string, bool> {
+    return dict[
+        1 => 2,
+        3 => 4,
+    ];
+}
+
+function too_few_type_arg_for_iterable(): iterable<int> {
+    return dict[
+        1 => 2,
+        3 => 4,
+    ];
+}
+
+function too_many_type_arg_for_iterable(): iterable<int, string, bool> {
+    return dict[
+        1 => 2,
+        3 => 4,
+    ];
+}
+
+function too_many_type_arg_for_class(): class<stdClass, bool> {
+    \stdClass::class
+}
+
+function too_many_type_arg_for_interface(): interface<Countable, bool> {
+    \Countable::class
+}
+

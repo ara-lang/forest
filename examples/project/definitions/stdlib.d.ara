@@ -1,0 +1,50 @@
+const PHP_INT_MIN = -9223372036854775808;
+const PHP_INT_MAX = 9223372036854775807;
+
+function strlen(string $string): int {}
+
+function strpos(string $haystack, string $needle, int $offset = 0): int {}
+
+function strrpos(string $haystack, string $needle, int $offset = 0): int {}
+
+function substr(string $string, int $start, ?int $length = null): string {}
+
+function strtolower(string $string): string {}
+
+function strtoupper(string $string): string {}
+
+function trim(string $string, string $charlist = " \t\n\r\0\x0B"): string {}
+
+function ltrim(string $string, string $charlist = " \t\n\r\0\x0B"): string {}
+
+function rtrim(string $string, string $charlist = " \t\n\r\0\x0B"): string {}
+
+function str_replace(string $search, string $replace, string $subject): string {}
+
+function str_ireplace(string $search, string $replace, string $subject): string {}
+
+function str_repeat(string $input, int $multiplier): string {}
+
+function str_shuffle(string $string): string {}
+
+function str_split(string $string, int $split_length = 1): vec<string> {}
+
+function str_word_count(string $string, int $format = 0, string $charlist = ""): int|vec<string>|dict<int, string> {}
+
+function strrev(string $string): string {}
+
+function explode(string $delimiter, string $string, int $limit = PHP_INT_MAX): vec<string> {}
+
+function implode(string $glue, vec<string> $pieces): string {}
+
+function join(string $glue, vec<string> $pieces): string {}
+
+function number_format(float|int $number, int $decimals = 0, string $dec_point = ".", string $thousands_sep = ","): string {}
+
+function chr(int $ascii): string {}
+
+function ord(string $string): int {}
+
+function ucfirst(string $string): string {}
+
+function ucwords(string $string): string {}

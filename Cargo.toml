@@ -1,0 +1,37 @@
+[package]
+name = "ara_analyzer"
+version = "0.0.0"
+edition = "2021"
+description = "Linter, Type Checker, and Static Analyzer for Ara Programming Language 🐦"
+readme = "README.md"
+repository = "https://github.com/ara-lang/ara"
+documentation = "https://docs.rs/ara_lang"
+homepage = "https://ara-lang.io"
+exclude = ["/.github/*"]
+authors = ["Saif Eddin Gmati <azjezz@protonmail.com>"]
+license = "MIT OR Apache-2.0"
+keywords = ["ara", "php", "programming-language", "static-analysis", "linter"]
+categories = ["compilers", "development-tools::build-utils"]
+
+[dependencies]
+ara_parser = { version = "0.5.3" }
+ara_source = { version = "0.2.0" }
+ara_reporting = { version = "0.5.1" }
+clap = { version = "4.0.32", features = ["unicode", "wrap_help"] }
+serde_derive = "1.0.152"
+config = "0.13.3"
+serde = { version = "1.0.152", features = ["derive"] }
+inflections = "1.1.1"
+rustc-hash = "1.1.0"
+
+[profile.release]
+opt-level = 3
+debug = false
+strip = 'symbols'
+debug-assertions = false
+overflow-checks = false
+lto = 'fat'
+panic = 'abort'
+incremental = true
+codegen-units = 1
+rpath = true
