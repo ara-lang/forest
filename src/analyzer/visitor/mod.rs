@@ -13,7 +13,6 @@ pub mod invalid_operand_for_arithmetic_operation;
 pub mod naming_convention;
 pub mod operation_cannot_be_used_for_reading;
 pub mod parameters_after_variadic;
-pub mod redundant_import;
 pub mod required_parameter_after_optional;
 pub mod return_from_constructor;
 pub mod return_from_never_function;

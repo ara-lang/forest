@@ -1,16 +1,19 @@
 namespace foo;
 
-final class foo {
-    public function __construct()
-    {
-        $this = 1;
+type Foo = self|static|parent;
 
-        static function(): void {} = 1;
+interface Http {
+    public function foo(): Foo;
 
-        {
-            $foo = 2;
-        }
+    public function bar(): Foo;
 
-        return 1;
-    }
+    public function baz(): parent;
+}
+
+interface Https extends Http {
+    public function foo(): Foo;
+
+    public function bar(): Foo;
+
+    public function baz(): parent;
 }

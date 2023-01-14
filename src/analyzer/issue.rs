@@ -76,7 +76,7 @@ pub enum AnalyzerIssueCode {
     CannotUseThisAsParameter = 74,
     CannotUseThisAsProperty = 75,
     CannotUseStandaloneBlockStatement = 76,
-    CannotUseParentWhenCurrentClassScopeHasNoParent = 77,
+    CannotUseParentWhenCurrentTypeScopeHasNoParent = 77,
     CannotReturnAValueFromVoidFunction = 78,
     CannotReturnFromNeverFunction = 79,
     MissingParentConstructorCall = 85,
@@ -93,11 +93,12 @@ pub enum AnalyzerIssueCode {
     DuplicateItemDefinition = 98,
     RedundantUse = 99,
     RedundantUseDefinitionAlias = 100,
-    DuplicateUseDefinition = 101,
+    NameAlreadyInUse = 101,
     DuplicateUseDefinitionUnderAlias = 102,
     InvalidGenericArgumentsCount = 103,
     NoMoreParametersAfterVariadic = 104,
     VariadicParameterCannotBeOptional = 105,
+    NameIsReservedTypeName = 106,
 }
 
 impl ::std::fmt::Display for AnalyzerIssueCode {

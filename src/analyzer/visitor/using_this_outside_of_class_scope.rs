@@ -3,10 +3,12 @@ use ara_parser::tree::definition::function::ConstructorParameterDefinition;
 use ara_parser::tree::definition::function::FunctionLikeParameterDefinition;
 use ara_parser::tree::definition::interface::InterfaceDefinition;
 use ara_parser::tree::definition::property::PropertyDefinition;
+use ara_parser::tree::definition::r#enum::EnumDefinition;
 use ara_parser::tree::downcast;
 use ara_parser::tree::identifier::Identifier;
 use ara_parser::tree::variable::Variable;
 use ara_parser::tree::Node;
+use ara_reporting::annotation::Annotation;
 use ara_reporting::issue::Issue;
 
 use crate::analyzer::issue::AnalyzerIssueCode;
@@ -67,14 +69,15 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     )];
                 }
 
-                if scope != Scope::ClassishWithParent {
+                if let Scope::Classish(from, to) = scope {
                     return vec![Issue::error(
-                        AnalyzerIssueCode::CannotUseParentWhenCurrentClassScopeHasNoParent,
-                        "cannot use `parent` when current class scope has no parent.",
+                        AnalyzerIssueCode::CannotUseParentWhenCurrentTypeScopeHasNoParent,
+                        "cannot use `parent` when current type scope has no parent.",
                         source,
                         identifier.initial_position(),
                         identifier.final_position(),
-                    )];
+                    )
+                    .with_annotation(Annotation::secondary(source, from, to))];
                 }
             }
 
@@ -143,27 +146,31 @@ impl Visitor for UsingThisOutsideOfClassContext {
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 enum Scope {
     Global,
-    Classish,
+    Classish(usize, usize),
     ClassishWithParent,
 }
 
 fn get_scope(ancestry: &Vec<&dyn Node>) -> Scope {
     // we start looking from the outter-most, because that's where the class definition would be.
     for node in ancestry {
-        if let Some(class_definition) = downcast::<ClassDefinition>(*node) {
-            if class_definition.extends.is_some() {
+        if let Some(definition) = downcast::<ClassDefinition>(*node) {
+            if definition.extends.is_some() {
                 return Scope::ClassishWithParent;
             }
 
-            return Scope::Classish;
+            return Scope::Classish(definition.initial_position(), definition.final_position());
         }
 
-        if let Some(_) = downcast::<InterfaceDefinition>(*node) {
-            return Scope::Classish;
+        if let Some(definition) = downcast::<InterfaceDefinition>(*node) {
+            if definition.extends.is_some() {
+                return Scope::ClassishWithParent;
+            }
+
+            return Scope::Classish(definition.initial_position(), definition.final_position());
         }
 
-        if let Some(_) = downcast::<InterfaceDefinition>(*node) {
-            return Scope::Classish;
+        if let Some(definition) = downcast::<EnumDefinition>(*node) {
+            return Scope::Classish(definition.initial_position(), definition.final_position());
         }
     }
 

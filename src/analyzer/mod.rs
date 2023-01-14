@@ -18,7 +18,6 @@ use crate::analyzer::visitor::invalid_operand_for_arithmetic_operation::InvalidA
 use crate::analyzer::visitor::naming_convention::NamingConvention;
 use crate::analyzer::visitor::operation_cannot_be_used_for_reading::OperationCannotBeUsedForReading;
 use crate::analyzer::visitor::parameters_after_variadic::ParametersAfterVariadic;
-use crate::analyzer::visitor::redundant_import::RedundantImport;
 use crate::analyzer::visitor::required_parameter_after_optional::RequiredParameterAfterOptional;
 use crate::analyzer::visitor::return_from_constructor::ReturnFromConstructor;
 use crate::analyzer::visitor::return_from_never_function::ReturnFromNeverFunction;
@@ -67,7 +66,6 @@ impl<'a> Analyzer<'a> {
                 Box::new(&mut OperationCannotBeUsedForReading::new()),
                 Box::new(&mut UnreachableCode::new()),
                 Box::new(&mut InvalidArthmeticOperation::new()),
-                Box::new(&mut RedundantImport::new()),
                 Box::new(&mut ReturnFromConstructor::new()),
                 Box::new(&mut AssignToThis::new()),
                 Box::new(&mut AssignToUnwriteableExpression::new()),
