@@ -17,3 +17,11 @@ interface Https extends Http {
 
     public function baz(): parent;
 }
+
+function self(): void {
+    parent::foo();
+}
+
+function parent(): void {
+    self::foo();
+}

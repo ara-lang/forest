@@ -310,8 +310,6 @@ impl DefinitionReferenceStorage {
                 .iter()
                 .find(|definition| match &definition.kind {
                     DefinitionKind::UseConstant(_) | DefinitionKind::Constant => {
-                        dbg!(&definition.name, &name);
-
                         definition.name.to_lowercase() == name.to_lowercase()
                     }
                     _ => false,

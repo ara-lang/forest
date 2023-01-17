@@ -1,5 +1,8 @@
 use ara_parser::tree::definition::class::ClassDefinition;
+use ara_parser::tree::definition::function::AbstractMethodDefinition;
+use ara_parser::tree::definition::function::ConcreteMethodDefinition;
 use ara_parser::tree::definition::function::ConstructorParameterDefinition;
+use ara_parser::tree::definition::function::FunctionDefinition;
 use ara_parser::tree::definition::function::FunctionLikeParameterDefinition;
 use ara_parser::tree::definition::interface::InterfaceDefinition;
 use ara_parser::tree::definition::property::PropertyDefinition;
@@ -25,6 +28,18 @@ impl UsingThisOutsideOfClassContext {
 impl Visitor for UsingThisOutsideOfClassContext {
     fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
         if let Some(identifier) = downcast::<Identifier>(node) {
+            if let Some(_) = downcast::<FunctionDefinition>(*ancestry.last().unwrap()) {
+                return vec![];
+            }
+
+            if let Some(_) = downcast::<ConcreteMethodDefinition>(*ancestry.last().unwrap()) {
+                return vec![];
+            }
+
+            if let Some(_) = downcast::<AbstractMethodDefinition>(*ancestry.last().unwrap()) {
+                return vec![];
+            }
+
             let name = identifier.value.to_string();
             let lowercase_name = name.to_lowercase();
 
