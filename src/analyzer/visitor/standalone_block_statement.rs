@@ -6,6 +6,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct StandaloneBlockStatement;
 
 impl StandaloneBlockStatement {
@@ -15,20 +16,20 @@ impl StandaloneBlockStatement {
 }
 
 impl Visitor for StandaloneBlockStatement {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
-        if let Some(statement) = downcast::<Statement>(node) {
-            if let Statement::Block(statement) = &statement {
-                let issue = Issue::error(
-                    AnalyzerIssueCode::CannotUseStandaloneBlockStatement,
-                    "cannot use a standalone block statement",
-                    source,
-                    statement.initial_position(),
-                    statement.final_position(),
-                )
-                .with_note("remove the outter brackets");
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
+        if let Some(Statement::Block(statement)) = downcast::<Statement>(node) {
+            let issue = Issue::error(
+                AnalyzerIssueCode::CannotUseStandaloneBlockStatement,
+                "cannot use a standalone block statement",
+            )
+            .with_source(
+                source,
+                statement.initial_position(),
+                statement.final_position(),
+            )
+            .with_note("remove the outter brackets");
 
-                return vec![issue];
-            }
+            return vec![issue];
         }
 
         vec![]

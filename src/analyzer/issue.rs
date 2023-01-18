@@ -1,5 +1,5 @@
 #[derive(Debug, Copy, Clone)]
-#[repr(u8)]
+#[repr(u16)]
 pub enum AnalyzerIssueCode {
     NamingConventionViolation = 1,
     NoRequiredParameterAfterOptional = 2,
@@ -99,6 +99,7 @@ pub enum AnalyzerIssueCode {
     NoMoreParametersAfterVariadic = 104,
     VariadicParameterCannotBeOptional = 105,
     NameIsReservedTypeName = 106,
+    KeywordMustBeInLowercase = 107,
 }
 
 impl ::std::fmt::Display for AnalyzerIssueCode {

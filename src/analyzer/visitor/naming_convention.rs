@@ -19,6 +19,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct NamingConvention;
 
 impl NamingConvention {
@@ -28,7 +29,7 @@ impl NamingConvention {
 }
 
 impl Visitor for NamingConvention {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(function) = downcast::<FunctionDefinition>(node) {
             // SAFETY: We know that the function name is valid UTF-8 because the parser
             let name =
@@ -39,8 +40,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("function name should use `snake_case`"),
-                    source.clone(),
+                    "function name should use `snake_case`".to_string(),
+                )
+                .with_source(
+                    source,
                     function.name.initial_position(),
                     function.name.final_position(),
                 )
@@ -57,8 +60,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("class name should use `PascalCase`"),
-                    source.clone(),
+                    "class name should use `PascalCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     class.name.initial_position(),
                     class.name.final_position(),
                 )
@@ -76,8 +81,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("interface name should use `PascalCase`"),
-                    source.clone(),
+                    "interface name should use `PascalCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     interface.name.initial_position(),
                     interface.name.final_position(),
                 )
@@ -99,8 +106,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("enum name should use `PascalCase`"),
-                    source.clone(),
+                    "enum name should use `PascalCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     identifier.initial_position(),
                     identifier.final_position(),
                 )
@@ -119,13 +128,15 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("type alias name should use `PascalCase`"),
-                    source.clone(),
+                    "type alias name should use `PascalCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     type_alias.name.initial_position(),
                     type_alias.name.final_position(),
                 )
                 .with_annotation(Annotation::secondary(
-                    source.clone(),
+                    source,
                     type_alias.name.initial_position(),
                     type_alias.name.final_position(),
                 ))
@@ -145,8 +156,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("parameter name should use `snake_case`"),
-                    source.clone(),
+                    "parameter name should use `snake_case`".to_string(),
+                )
+                .with_source(
+                    source,
                     parameter.variable.initial_position(),
                     parameter.variable.final_position(),
                 )
@@ -170,8 +183,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("property name should use `camelCase`"),
-                    source.clone(),
+                    "property name should use `camelCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     variable.initial_position(),
                     variable.final_position(),
                 )
@@ -195,8 +210,10 @@ impl Visitor for NamingConvention {
 
                     let issue = Issue::note(
                         AnalyzerIssueCode::NamingConventionViolation,
-                        format!("constant name should use `CONSTANT_CASE`"),
-                        source.clone(),
+                        "constant name should use `CONSTANT_CASE`".to_string(),
+                    )
+                    .with_source(
+                        source,
                         entry.name.initial_position(),
                         entry.name.final_position(),
                     )
@@ -221,8 +238,10 @@ impl Visitor for NamingConvention {
 
                     let issue = Issue::note(
                         AnalyzerIssueCode::NamingConventionViolation,
-                        format!("class-ish constant name should use `CONSTANT_CASE`"),
-                        source.clone(),
+                        "class-ish constant name should use `CONSTANT_CASE`".to_string(),
+                    )
+                    .with_source(
+                        source,
                         entry.name.initial_position(),
                         entry.name.final_position(),
                     )
@@ -245,8 +264,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("method name should use `camelCase`"),
-                    source.clone(),
+                    "method name should use `camelCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     method.name.initial_position(),
                     method.name.final_position(),
                 )
@@ -268,8 +289,10 @@ impl Visitor for NamingConvention {
 
                 let issue = Issue::note(
                     AnalyzerIssueCode::NamingConventionViolation,
-                    format!("method name should use `camelCase`"),
-                    source.clone(),
+                    "method name should use `camelCase`".to_string(),
+                )
+                .with_source(
+                    source,
                     method.name.initial_position(),
                     method.name.final_position(),
                 )
@@ -284,6 +307,6 @@ impl Visitor for NamingConvention {
             }
         }
 
-        return vec![];
+        vec![]
     }
 }

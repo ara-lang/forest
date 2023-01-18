@@ -29,7 +29,7 @@ pub struct DefinitionReference {
     pub position: (usize, usize),
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct DefinitionReferenceStorage {
     pub map: FxHashMap<String, Vec<DefinitionReference>>,
 }
@@ -397,15 +397,17 @@ impl DefinitionReferenceStorage {
             .map(|definitions| {
                 definitions
                     .iter()
-                    .filter(|definition| match &definition.kind {
-                        DefinitionKind::Use(_)
-                        | DefinitionKind::TypeAlias
-                        | DefinitionKind::Interface
-                        | DefinitionKind::Class
-                        | DefinitionKind::UnitEnum
-                        | DefinitionKind::StringBackedEnum
-                        | DefinitionKind::IntBackedEnum => true,
-                        _ => false,
+                    .filter(|definition| {
+                        matches!(
+                            &definition.kind,
+                            DefinitionKind::Use(_)
+                                | DefinitionKind::TypeAlias
+                                | DefinitionKind::Interface
+                                | DefinitionKind::Class
+                                | DefinitionKind::UnitEnum
+                                | DefinitionKind::StringBackedEnum
+                                | DefinitionKind::IntBackedEnum
+                        )
                     })
                     .collect()
             })

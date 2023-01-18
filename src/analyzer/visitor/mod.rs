@@ -10,6 +10,7 @@ pub mod definition_collector;
 pub mod discard_operation;
 pub mod duplicate_parameter;
 pub mod invalid_operand_for_arithmetic_operation;
+pub mod keyword_must_be_lowercase;
 pub mod naming_convention;
 pub mod operation_cannot_be_used_for_reading;
 pub mod parameters_after_variadic;
@@ -32,7 +33,7 @@ pub trait Visitor {
     ) -> Vec<Issue> {
         let mut issues = vec![];
 
-        issues.append(&mut self.visit(source, node, &ancestry));
+        issues.append(&mut self.visit(source, node, ancestry));
 
         ancestry.push(node);
         for child in node.children() {
@@ -43,5 +44,5 @@ pub trait Visitor {
         issues
     }
 
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue>;
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue>;
 }

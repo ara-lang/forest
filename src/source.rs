@@ -5,7 +5,7 @@ use ara_source::SourceMap;
 use crate::config::Configuration;
 use crate::error::Result;
 
-pub fn load<'a>(config: &Configuration) -> Result<SourceMap> {
+pub fn load(config: &Configuration) -> Result<SourceMap> {
     let mut paths = vec![];
     paths.push(&config.project.source);
     for definition in &config.definitions {

@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct AssignToThis;
 
 impl AssignToThis {
@@ -20,12 +21,14 @@ impl AssignToThis {
 }
 
 impl Visitor for AssignToThis {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(expression) = downcast::<AssignmentOperationExpression>(node) {
             if is_left_this(expression) {
                 let issue = Issue::error(
                     AnalyzerIssueCode::CannotAssignToThis,
                     "cannot assign to $this",
+                )
+                .with_source(
                     source,
                     expression.initial_position(),
                     expression.final_position(),

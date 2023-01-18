@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct RequiredParameterAfterOptional;
 
 impl RequiredParameterAfterOptional {
@@ -20,7 +21,7 @@ impl RequiredParameterAfterOptional {
 }
 
 impl Visitor for RequiredParameterAfterOptional {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
 
         if let Some(parameter_list) = downcast::<FunctionLikeParameterListDefinition>(node) {
@@ -78,12 +79,14 @@ fn get_required_parameter_issue(
     parameter: &dyn Node,
     parameter_name: &ByteString,
 ) -> Issue {
-    let issue = Issue::error(
+    Issue::error(
         AnalyzerIssueCode::NoRequiredParameterAfterOptional,
         format!(
             "required parameter `{}` declared after optional parameter `{}`",
             parameter_name, previous_name,
         ),
+    )
+    .with_source(
         source,
         parameter.initial_position(),
         parameter.final_position(),
@@ -99,7 +102,5 @@ fn get_required_parameter_issue(
     .with_note(format!(
         "move the optional parameter `{}` after the required parameter `{}`",
         previous_name, parameter_name,
-    ));
-
-    issue
+    ))
 }

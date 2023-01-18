@@ -25,3 +25,11 @@ function self(): void {
 function parent(): void {
     self::foo();
 }
+
+FINAL READONLY CLASS FOO {
+    PRIVATE STRING $foo = '';
+
+    PUBLIC FUNCTION SET(STRING $foo): VOID {
+        $this->foo = $foo;
+    }
+}

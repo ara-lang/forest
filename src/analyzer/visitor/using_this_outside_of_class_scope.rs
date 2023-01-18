@@ -17,6 +17,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct UsingThisOutsideOfClassContext;
 
 impl UsingThisOutsideOfClassContext {
@@ -26,17 +27,17 @@ impl UsingThisOutsideOfClassContext {
 }
 
 impl Visitor for UsingThisOutsideOfClassContext {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(identifier) = downcast::<Identifier>(node) {
-            if let Some(_) = downcast::<FunctionDefinition>(*ancestry.last().unwrap()) {
+            if downcast::<FunctionDefinition>(*ancestry.last().unwrap()).is_some() {
                 return vec![];
             }
 
-            if let Some(_) = downcast::<ConcreteMethodDefinition>(*ancestry.last().unwrap()) {
+            if downcast::<ConcreteMethodDefinition>(*ancestry.last().unwrap()).is_some() {
                 return vec![];
             }
 
-            if let Some(_) = downcast::<AbstractMethodDefinition>(*ancestry.last().unwrap()) {
+            if downcast::<AbstractMethodDefinition>(*ancestry.last().unwrap()).is_some() {
                 return vec![];
             }
 
@@ -50,6 +51,8 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseSelfOutsideOfClassScope,
                         "cannot use `self` outside of a class scope.",
+                    )
+                    .with_source(
                         source,
                         identifier.initial_position(),
                         identifier.final_position(),
@@ -64,6 +67,8 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseStaticOutsideOfClassScope,
                         "cannot use `static` outside of a class scope.",
+                    )
+                    .with_source(
                         source,
                         identifier.initial_position(),
                         identifier.final_position(),
@@ -78,6 +83,8 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseParentOutsideOfClassScope,
                         "cannot use `parent` outside of a class scope.",
+                    )
+                    .with_source(
                         source,
                         identifier.initial_position(),
                         identifier.final_position(),
@@ -88,6 +95,8 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseParentWhenCurrentTypeScopeHasNoParent,
                         "cannot use `parent` when current type scope has no parent.",
+                    )
+                    .with_source(
                         source,
                         identifier.initial_position(),
                         identifier.final_position(),
@@ -106,34 +115,38 @@ impl Visitor for UsingThisOutsideOfClassContext {
             if lowercase_name == "$this" {
                 let ancestry_len = ancestry.len();
 
-                if let Some(_) =
-                    downcast::<FunctionLikeParameterDefinition>(ancestry[ancestry_len - 1])
+                if downcast::<FunctionLikeParameterDefinition>(ancestry[ancestry_len - 1]).is_some()
                 {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseThisAsParameter,
                         "cannot use `$this` as a parameter",
+                    )
+                    .with_source(
                         source,
                         variable.initial_position(),
                         variable.final_position(),
                     )];
                 }
 
-                if let Some(_) =
-                    downcast::<ConstructorParameterDefinition>(ancestry[ancestry_len - 1])
+                if downcast::<ConstructorParameterDefinition>(ancestry[ancestry_len - 1]).is_some()
                 {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseThisAsParameter,
                         "cannot use `$this` as a constructor parameter",
+                    )
+                    .with_source(
                         source,
                         variable.initial_position(),
                         variable.final_position(),
                     )];
                 }
 
-                if let Some(_) = downcast::<PropertyDefinition>(ancestry[ancestry_len - 2]) {
+                if downcast::<PropertyDefinition>(ancestry[ancestry_len - 2]).is_some() {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseThisAsProperty,
                         "cannot use `$this` as a property",
+                    )
+                    .with_source(
                         source,
                         variable.initial_position(),
                         variable.final_position(),
@@ -146,6 +159,8 @@ impl Visitor for UsingThisOutsideOfClassContext {
                     return vec![Issue::error(
                         AnalyzerIssueCode::CannotUseThisOutsideOfClassScope,
                         "cannot use `$this` outside of a class scope.",
+                    )
+                    .with_source(
                         source,
                         variable.initial_position(),
                         variable.final_position(),
@@ -165,7 +180,7 @@ enum Scope {
     ClassishWithParent,
 }
 
-fn get_scope(ancestry: &Vec<&dyn Node>) -> Scope {
+fn get_scope(ancestry: &[&dyn Node]) -> Scope {
     // we start looking from the outter-most, because that's where the class definition would be.
     for node in ancestry {
         if let Some(definition) = downcast::<ClassDefinition>(*node) {
@@ -189,5 +204,5 @@ fn get_scope(ancestry: &Vec<&dyn Node>) -> Scope {
         }
     }
 
-    return Scope::Global;
+    Scope::Global
 }

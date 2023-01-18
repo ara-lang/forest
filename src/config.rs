@@ -49,7 +49,7 @@ pub fn load(
 
     let root = root
         .map(|p| p.to_path_buf())
-        .unwrap_or(current.to_path_buf());
+        .unwrap_or_else(|| current.to_path_buf());
 
     let root = if root.is_relative() {
         let mut absolute = current;
@@ -70,7 +70,7 @@ pub fn load(
 
         absolute
     } else {
-        path.to_path_buf()
+        path
     };
 
     let mut configuration: Configuration = Config::builder()

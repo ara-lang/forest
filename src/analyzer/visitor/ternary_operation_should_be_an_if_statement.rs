@@ -9,6 +9,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct TernaryOperationShouldBeAnIfStatement;
 
 impl TernaryOperationShouldBeAnIfStatement {
@@ -28,6 +29,8 @@ impl TernaryOperationShouldBeAnIfStatement {
                     vec![Issue::error(
                         AnalyzerIssueCode::TernaryOperationShouldBeAnIfElseStatement,
                         "ternary operation should be an if-else statement",
+                    )
+                    .with_source(
                         source,
                         expression.initial_position(),
                         expression.final_position(),
@@ -38,6 +41,8 @@ impl TernaryOperationShouldBeAnIfStatement {
                     vec![Issue::error(
                         AnalyzerIssueCode::TernaryOperationShouldBeAnIfStatement,
                         "ternary operation should be an if statement",
+                    )
+                    .with_source(
                         source,
                         expression.initial_position(),
                         expression.final_position(),
@@ -50,7 +55,7 @@ impl TernaryOperationShouldBeAnIfStatement {
 }
 
 impl Visitor for TernaryOperationShouldBeAnIfStatement {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
 
         if let Some(block) = downcast::<BlockStatement>(node) {

@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct ReturnFromNeverFunction;
 
 impl ReturnFromNeverFunction {
@@ -20,7 +21,7 @@ impl ReturnFromNeverFunction {
 }
 
 impl Visitor for ReturnFromNeverFunction {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
         if let Some(statement) = downcast::<ReturnStatement>(node) {
             for parent in ancestry.iter().rev() {
@@ -30,7 +31,7 @@ impl Visitor for ReturnFromNeverFunction {
                         statement,
                         anonymous_function,
                         "function",
-                        &"function@anonymous",
+                        "function@anonymous",
                         &anonymous_function.return_type.type_definition,
                     ) {
                         issues.push(issue);
@@ -91,6 +92,8 @@ fn return_from_never_function(
                     "cannot return from never {} `{}`",
                     function_type, function_name
                 ),
+            )
+            .with_source(
                 source,
                 statement.initial_position(),
                 statement.final_position(),

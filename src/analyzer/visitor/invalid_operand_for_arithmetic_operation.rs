@@ -18,6 +18,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct InvalidArthmeticOperation;
 
 impl InvalidArthmeticOperation {
@@ -271,7 +272,7 @@ impl InvalidArthmeticOperation {
 }
 
 impl Visitor for InvalidArthmeticOperation {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(operation) = downcast::<ArithmeticOperationExpression>(node) {
             match &operation {
                 ArithmeticOperationExpression::Addition {
@@ -319,10 +320,8 @@ impl Visitor for InvalidArthmeticOperation {
                         let mut issue = Issue::error(
                             AnalyzerIssueCode::InvalidOperandForArithmeticOperation,
                             "invalid operand for arithmetic operation",
-                            source,
-                            *operation,
-                            operation + 1,
-                        );
+                        )
+                        .with_source(source, *operation, operation + 1);
 
                         if let Some(left_invalid_operand) = left_invalid_operand {
                             issue = issue.with_annotation(
@@ -356,10 +355,8 @@ impl Visitor for InvalidArthmeticOperation {
                         let issue = Issue::error(
                             AnalyzerIssueCode::InvalidOperandForArithmeticOperation,
                             "invalid operand for arithmetic operation",
-                            source,
-                            *operation,
-                            operation + 1,
                         )
+                        .with_source(source, *operation, operation + 1)
                         .with_annotation(right_invalid_operand.with_message("invalid operand"));
 
                         return vec![issue];
@@ -392,10 +389,8 @@ impl Visitor for InvalidArthmeticOperation {
                         let issue = Issue::error(
                             AnalyzerIssueCode::InvalidOperandForArithmeticOperation,
                             "invalid operand for arithmetic operation",
-                            source,
-                            *operation,
-                            operation + 2,
                         )
+                        .with_source(source, *operation, operation + 2)
                         .with_annotation(right_invalid_operand.with_message("invalid operand"));
 
                         return vec![issue];

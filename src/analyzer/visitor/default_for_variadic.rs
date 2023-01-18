@@ -9,6 +9,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct DefaultForVariadic;
 
 impl DefaultForVariadic {
@@ -18,12 +19,7 @@ impl DefaultForVariadic {
 }
 
 impl Visitor for DefaultForVariadic {
-    fn visit(
-        &mut self,
-        source: &str,
-        node: &dyn Node,
-        _ancestry: &Vec<&dyn Node>,
-    ) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
         if let Some(parameter_list) = downcast::<FunctionLikeParameterListDefinition>(node) {
             for parameter in &parameter_list.parameters.inner {
@@ -67,10 +63,8 @@ fn variadic_parameter_cannot_be_optional(
             "parameter `{}` cannot be optional because it is variadic",
             variable
         ),
-        source,
-        default.initial_position(),
-        default.final_position(),
     )
+    .with_source(source, default.initial_position(), default.final_position())
     .with_annotation(Annotation::secondary(
         source,
         parameter.initial_position(),

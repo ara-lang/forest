@@ -9,6 +9,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct ReturnFromConstructor;
 
 impl ReturnFromConstructor {
@@ -18,10 +19,10 @@ impl ReturnFromConstructor {
 }
 
 impl Visitor for ReturnFromConstructor {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(statement) = downcast::<ReturnStatement>(node) {
             for parent in ancestry.iter().rev() {
-                if let Some(_) = downcast::<AnonymousFunctionExpression>(*parent) {
+                if downcast::<AnonymousFunctionExpression>(*parent).is_some() {
                     break;
                 }
 
@@ -29,6 +30,8 @@ impl Visitor for ReturnFromConstructor {
                     let issue = Issue::error(
                         AnalyzerIssueCode::CannotReturnFromConstructor,
                         "cannot return a value from constructor",
+                    )
+                    .with_source(
                         source,
                         statement.initial_position(),
                         statement.final_position(),

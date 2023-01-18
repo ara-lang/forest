@@ -8,6 +8,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct BuiltinTypesGenericArgumentsCount;
 
 impl BuiltinTypesGenericArgumentsCount {
@@ -17,7 +18,7 @@ impl BuiltinTypesGenericArgumentsCount {
 }
 
 impl Visitor for BuiltinTypesGenericArgumentsCount {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(type_definition) = downcast::<TypeDefinition>(node) {
             if let TypeDefinition::Vec(keyword, templates) = type_definition {
                 if let Some(issue) =
@@ -60,7 +61,7 @@ impl Visitor for BuiltinTypesGenericArgumentsCount {
             }
         }
 
-        return vec![];
+        vec![]
     }
 }
 
@@ -79,6 +80,7 @@ fn get_invalid_type_templates_count_issue(
                 expected,
                 len
             ),
+                ).with_source(
             source,
             node.initial_position(),
             node.final_position(),

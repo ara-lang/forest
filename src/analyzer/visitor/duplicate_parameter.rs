@@ -12,6 +12,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct DuplicateParameter;
 
 impl DuplicateParameter {
@@ -21,7 +22,7 @@ impl DuplicateParameter {
 }
 
 impl Visitor for DuplicateParameter {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
 
         if let Some(parameter_list) = downcast::<FunctionLikeParameterListDefinition>(node) {
@@ -33,7 +34,7 @@ impl Visitor for DuplicateParameter {
                     Entry::Occupied(entry) => {
                         issues.push(duplicate_parameter(
                             source,
-                            &entry.key(),
+                            entry.key(),
                             entry.get(),
                             parameter,
                         ));
@@ -54,7 +55,7 @@ impl Visitor for DuplicateParameter {
                     Entry::Occupied(entry) => {
                         issues.push(duplicate_parameter(
                             source,
-                            &entry.key(),
+                            entry.key(),
                             entry.get(),
                             parameter,
                         ));
@@ -76,9 +77,11 @@ fn duplicate_parameter(
     previous: &(usize, usize),
     parameter: &dyn Node,
 ) -> Issue {
-    let issue = Issue::error(
+    Issue::error(
         AnalyzerIssueCode::NoDuplicateParameter,
         format!("the parameter `{}` is defined multiple times", name),
+    )
+    .with_source(
         source,
         parameter.initial_position(),
         parameter.final_position(),
@@ -88,7 +91,5 @@ fn duplicate_parameter(
             "previous definition of the parameter `{}` here",
             name
         )),
-    );
-
-    issue
+    )
 }

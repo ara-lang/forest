@@ -10,6 +10,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct AssignToUnwriteableExpression;
 
 impl AssignToUnwriteableExpression {
@@ -19,12 +20,14 @@ impl AssignToUnwriteableExpression {
 }
 
 impl Visitor for AssignToUnwriteableExpression {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(expression) = downcast::<AssignmentOperationExpression>(node) {
             if is_left_unwriteable(expression) {
                 let issue = Issue::error(
                     AnalyzerIssueCode::CannotAssignToUnwriteableExpression,
                     "cannot assign to an unwriteable expression",
+                )
+                .with_source(
                     source,
                     expression.initial_position(),
                     expression.final_position(),
@@ -66,11 +69,7 @@ fn is_expression_writable(expression: &Expression) -> bool {
         Expression::ClassOperation(ClassOperationExpression::StaticPropertyFetch { .. }) => true,
         Expression::ArrayOperation(ArrayOperationExpression::Push { .. }) => true,
         Expression::ArrayOperation(ArrayOperationExpression::Access { .. }) => true,
-        Expression::Tuple(tuple) => tuple
-            .elements
-            .inner
-            .iter()
-            .all(|e| is_expression_writable(e)),
+        Expression::Tuple(tuple) => tuple.elements.inner.iter().all(is_expression_writable),
         _ => false,
     }
 }

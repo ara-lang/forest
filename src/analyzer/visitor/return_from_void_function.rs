@@ -10,6 +10,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct ReturnFromVoidFunction;
 
 impl ReturnFromVoidFunction {
@@ -19,7 +20,7 @@ impl ReturnFromVoidFunction {
 }
 
 impl Visitor for ReturnFromVoidFunction {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
         if let Some(statement) = downcast::<ReturnStatement>(node) {
             if let ReturnStatement::Explicit {
@@ -36,7 +37,7 @@ impl Visitor for ReturnFromVoidFunction {
                         statement,
                         anonymous_function,
                         "function",
-                        &"function@anonymous",
+                        "function@anonymous",
                         &anonymous_function.return_type.type_definition,
                     ) {
                         issues.push(issue);
@@ -97,6 +98,8 @@ fn return_from_void_function(
                     "cannot return a value from void {} `{}`",
                     function_type, function_name
                 ),
+            )
+            .with_source(
                 source,
                 statement.initial_position(),
                 statement.final_position(),

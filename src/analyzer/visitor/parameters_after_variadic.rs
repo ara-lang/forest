@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct ParametersAfterVariadic;
 
 impl ParametersAfterVariadic {
@@ -20,7 +21,7 @@ impl ParametersAfterVariadic {
 }
 
 impl Visitor for ParametersAfterVariadic {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         let mut issues = vec![];
         if let Some(parameter_list) = downcast::<FunctionLikeParameterListDefinition>(node) {
             let mut variadic_parameter: Option<&FunctionLikeParameterDefinition> = None;
@@ -81,6 +82,8 @@ fn get_additional_parameter_issue(
             "parameter `{}` cannot appear after variadic parameter `{}`",
             parameter_name, previous_name,
         ),
+    )
+    .with_source(
         source,
         parameter.initial_position(),
         parameter.final_position(),

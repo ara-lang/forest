@@ -10,6 +10,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct UnreachableCode;
 
 impl UnreachableCode {
@@ -48,7 +49,7 @@ impl UnreachableCode {
             _ => {}
         }
 
-        return found_unreachable;
+        found_unreachable
     }
 
     fn analyze_statement(source: &str, statement: &Statement) -> Option<Annotation> {
@@ -89,19 +90,22 @@ impl UnreachableCode {
             }
             Statement::Block(block) => {
                 for statement in block.statements.iter() {
-                    found_unreachable = Self::analyze_statement(source, statement);
-                    break;
+                    if let Some(unreachable) = Self::analyze_statement(source, statement) {
+                        found_unreachable = Some(unreachable);
+
+                        break;
+                    }
                 }
             }
             _ => {}
         }
 
-        return found_unreachable;
+        found_unreachable
     }
 }
 
 impl Visitor for UnreachableCode {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(block) = downcast::<BlockStatement>(node) {
             let mut found_unreachable = None;
             for statement in &block.statements {
@@ -109,6 +113,8 @@ impl Visitor for UnreachableCode {
                     let issue = Issue::error(
                         AnalyzerIssueCode::UnreachableCode,
                         "unreachable code detected",
+                    )
+                    .with_source(
                         source,
                         statement.initial_position(),
                         block.statements.last().unwrap().final_position(),

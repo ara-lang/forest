@@ -15,6 +15,7 @@ use crate::analyzer::visitor::definition_collector::DefinitionCollector;
 use crate::analyzer::visitor::discard_operation::DiscardOperation;
 use crate::analyzer::visitor::duplicate_parameter::DuplicateParameter;
 use crate::analyzer::visitor::invalid_operand_for_arithmetic_operation::InvalidArthmeticOperation;
+use crate::analyzer::visitor::keyword_must_be_lowercase::KeywordMustBeInLowercase;
 use crate::analyzer::visitor::naming_convention::NamingConvention;
 use crate::analyzer::visitor::operation_cannot_be_used_for_reading::OperationCannotBeUsedForReading;
 use crate::analyzer::visitor::parameters_after_variadic::ParametersAfterVariadic;
@@ -55,8 +56,8 @@ impl<'a> Analyzer<'a> {
         };
 
         let mut issues = traverser::traverse(
-            &source_map,
-            &tree_map,
+            source_map,
+            tree_map,
             vec![
                 Box::new(&mut NamingConvention::new()),
                 Box::new(&mut RequiredParameterAfterOptional::new()),
@@ -78,6 +79,7 @@ impl<'a> Analyzer<'a> {
                 Box::new(&mut ReturnFromVoidFunction::new()),
                 Box::new(&mut ReturnFromNeverFunction::new()),
                 Box::new(&mut DuplicateParameter::new()),
+                Box::new(&mut KeywordMustBeInLowercase::new()),
                 Box::new(&mut collector),
             ],
         )?;
@@ -87,7 +89,7 @@ impl<'a> Analyzer<'a> {
 
         issues.append(&mut definitions_issues);
 
-        let report = build_report(&self.config, issues);
+        let report = build_report(self.config, issues);
         let should_continue = if let Some(report) = &report {
             report.severity().unwrap() < IssueSeverity::Error
         } else {
@@ -135,32 +137,6 @@ fn build_report(config: &Configuration, issues: Vec<Issue>) -> Option<Report> {
     } else {
         let mut footer =
             ReportFooter::new("failed to analyze the project due to the issue(s) above");
-
-        let mut severities = issues
-            .iter()
-            .map(|issue| issue.severity)
-            .collect::<Vec<IssueSeverity>>();
-
-        severities.sort();
-
-        let mut severities_count: Vec<(&IssueSeverity, usize)> = Vec::new();
-        for severity in &severities {
-            if let Some(_) = severities_count.iter().find(|(s, _)| *s == severity) {
-                continue;
-            }
-
-            let count = severities.iter().filter(|s| *s == severity).count();
-            severities_count.push((severity, count));
-        }
-
-        footer.notes.push(format!(
-            "summary: {}",
-            severities_count
-                .iter()
-                .map(|(severity, count)| format!("{} {}(s)", count, severity))
-                .collect::<Vec<String>>()
-                .join(", ")
-        ));
 
         if ignored_issues > 0 {
             footer

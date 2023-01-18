@@ -40,33 +40,31 @@ pub fn collect_definitions(
 
                     if let Some(symbol) = storage.get_function(&qualified_name) {
                         let issue = duplicate_item_issue(
-                            &symbol,
+                            symbol,
                             source_name,
                             function.initial_position(),
                             function.return_type.final_position(),
                         );
 
                         issues.push(issue);
-                    } else {
-                        if let Some(definition) =
-                            storage.get_function_name_in_source(source_name, &name)
-                        {
-                            let issue = name_already_in_use(
-                                &definition,
-                                source_name,
-                                function.initial_position(),
-                                function.final_position(),
-                            );
+                    } else if let Some(definition) =
+                        storage.get_function_name_in_source(source_name, &name)
+                    {
+                        let issue = name_already_in_use(
+                            definition,
+                            source_name,
+                            function.initial_position(),
+                            function.final_position(),
+                        );
 
-                            issues.push(issue);
-                        } else {
-                            storage.add_function(
-                                name,
-                                qualified_name,
-                                source_name.to_string(),
-                                (function.initial_position(), function.final_position()),
-                            );
-                        }
+                        issues.push(issue);
+                    } else {
+                        storage.add_function(
+                            name,
+                            qualified_name,
+                            source_name.to_string(),
+                            (function.initial_position(), function.final_position()),
+                        );
                     }
                 }
                 Definition::Interface(interface) => {
@@ -87,7 +85,7 @@ pub fn collect_definitions(
                         issues.push(issue);
                     } else if let Some(definition) = storage.get_type(&qualified_name) {
                         let issue = duplicate_item_issue(
-                            &definition,
+                            definition,
                             source_name,
                             interface.initial_position(),
                             interface.final_position(),
@@ -98,7 +96,7 @@ pub fn collect_definitions(
                         storage.get_type_name_in_source(source_name, &name)
                     {
                         let issue = name_already_in_use(
-                            &definition,
+                            definition,
                             source_name,
                             interface.initial_position(),
                             interface.final_position(),
@@ -132,7 +130,7 @@ pub fn collect_definitions(
                         issues.push(issue);
                     } else if let Some(symbol) = storage.get_type(&qualified_name) {
                         let issue = duplicate_item_issue(
-                            &symbol,
+                            symbol,
                             source_name,
                             class.initial_position(),
                             class.final_position(),
@@ -143,7 +141,7 @@ pub fn collect_definitions(
                         storage.get_type_name_in_source(source_name, &name)
                     {
                         let issue = name_already_in_use(
-                            &definition,
+                            definition,
                             source_name,
                             class.initial_position(),
                             class.final_position(),
@@ -178,7 +176,7 @@ pub fn collect_definitions(
                             issues.push(issue);
                         } else if let Some(definition) = storage.get_type(&qualified_name) {
                             let issue = duplicate_item_issue(
-                                &definition,
+                                definition,
                                 source_name,
                                 backed_enum.initial_position(),
                                 backed_enum.final_position(),
@@ -189,7 +187,7 @@ pub fn collect_definitions(
                             storage.get_type_name_in_source(source_name, &name)
                         {
                             let issue = name_already_in_use(
-                                &definition,
+                                definition,
                                 source_name,
                                 backed_enum.initial_position(),
                                 backed_enum.final_position(),
@@ -241,7 +239,7 @@ pub fn collect_definitions(
                             issues.push(issue);
                         } else if let Some(symbol) = storage.get_type(&qualified_name) {
                             let issue = duplicate_item_issue(
-                                &symbol,
+                                symbol,
                                 source_name,
                                 unit_enum.initial_position(),
                                 unit_enum.final_position(),
@@ -252,7 +250,7 @@ pub fn collect_definitions(
                             storage.get_type_name_in_source(source_name, &name)
                         {
                             let issue = name_already_in_use(
-                                &definition,
+                                definition,
                                 source_name,
                                 unit_enum.initial_position(),
                                 unit_enum.final_position(),
@@ -287,7 +285,7 @@ pub fn collect_definitions(
                         issues.push(issue);
                     } else if let Some(definition) = storage.get_type(&qualified_name) {
                         let issue = duplicate_item_issue(
-                            &definition,
+                            definition,
                             source_name,
                             type_alias.initial_position(),
                             type_alias.final_position(),
@@ -298,7 +296,7 @@ pub fn collect_definitions(
                         storage.get_type_name_in_source(source_name, &name)
                     {
                         let issue = name_already_in_use(
-                            &definition,
+                            definition,
                             source_name,
                             type_alias.initial_position(),
                             type_alias.final_position(),
@@ -324,7 +322,18 @@ pub fn collect_definitions(
 
                         if let Some(symbol) = storage.get_constant(&qualified_name) {
                             let issue = duplicate_item_issue(
-                                &symbol,
+                                symbol,
+                                source_name,
+                                entry.initial_position(),
+                                entry.final_position(),
+                            );
+
+                            issues.push(issue);
+                        } else if let Some(definition) =
+                            storage.get_constant_name_in_source(source_name, &name)
+                        {
+                            let issue = name_already_in_use(
+                                definition,
                                 source_name,
                                 entry.initial_position(),
                                 entry.final_position(),
@@ -332,25 +341,12 @@ pub fn collect_definitions(
 
                             issues.push(issue);
                         } else {
-                            if let Some(definition) =
-                                storage.get_constant_name_in_source(source_name, &name)
-                            {
-                                let issue = name_already_in_use(
-                                    &definition,
-                                    source_name,
-                                    entry.initial_position(),
-                                    entry.final_position(),
-                                );
-
-                                issues.push(issue);
-                            } else {
-                                storage.add_constant(
-                                    name,
-                                    qualified_name,
-                                    source_name.to_string(),
-                                    (entry.initial_position(), entry.final_position()),
-                                );
-                            }
+                            storage.add_constant(
+                                name,
+                                qualified_name,
+                                source_name.to_string(),
+                                (entry.initial_position(), entry.final_position()),
+                            );
                         }
                     }
                 }
@@ -368,7 +364,7 @@ pub fn collect_definitions(
 
                             if is_name_reserved(&used_name) {
                                 let issue = name_is_reserved(
-                                    &name,
+                                    name,
                                     source_name,
                                     use_definition.initial_position(),
                                     use_definition.final_position(),
@@ -386,7 +382,7 @@ pub fn collect_definitions(
 
                                     if is_name_reserved(&used_name) {
                                         let issue = name_is_reserved(
-                                            &aliased_name,
+                                            aliased_name,
                                             source_name,
                                             use_definition.initial_position(),
                                             use_definition.final_position(),
@@ -400,7 +396,7 @@ pub fn collect_definitions(
                                     }
                                 }
 
-                                match storage.get_type_name_in_source(&source_name, &used_name) {
+                                match storage.get_type_name_in_source(source_name, &used_name) {
                                     Some(def) => {
                                         duplicate_import = Some(def.clone());
                                     }
@@ -431,7 +427,7 @@ pub fn collect_definitions(
 
                             if is_name_reserved(&used_name) {
                                 let issue = name_is_reserved(
-                                    &name,
+                                    name,
                                     source_name,
                                     use_definition.initial_position(),
                                     use_definition.final_position(),
@@ -449,7 +445,7 @@ pub fn collect_definitions(
 
                                     if is_name_reserved(&used_name) {
                                         let issue = name_is_reserved(
-                                            &aliased_name,
+                                            aliased_name,
                                             source_name,
                                             use_definition.initial_position(),
                                             use_definition.final_position(),
@@ -463,8 +459,7 @@ pub fn collect_definitions(
                                     }
                                 }
 
-                                match storage.get_function_name_in_source(&source_name, &used_name)
-                                {
+                                match storage.get_function_name_in_source(source_name, &used_name) {
                                     Some(def) => {
                                         duplicate_import = Some(def.clone());
                                     }
@@ -495,7 +490,7 @@ pub fn collect_definitions(
 
                             if is_name_reserved(&used_name) {
                                 let issue = name_is_reserved(
-                                    &name,
+                                    name,
                                     source_name,
                                     use_definition.initial_position(),
                                     use_definition.final_position(),
@@ -513,7 +508,7 @@ pub fn collect_definitions(
 
                                     if is_name_reserved(&used_name) {
                                         let issue = name_is_reserved(
-                                            &aliased_name,
+                                            aliased_name,
                                             source_name,
                                             use_definition.initial_position(),
                                             use_definition.final_position(),
@@ -527,8 +522,7 @@ pub fn collect_definitions(
                                     }
                                 }
 
-                                match storage.get_constant_name_in_source(&source_name, &used_name)
-                                {
+                                match storage.get_constant_name_in_source(source_name, &used_name) {
                                     Some(def) => {
                                         duplicate_import = Some(def.clone());
                                     }
@@ -557,7 +551,9 @@ pub fn collect_definitions(
                     if redundant_import {
                         let mut issue = Issue::note(
                             AnalyzerIssueCode::RedundantUse,
-                            format!("redudant use definition"),
+                            "redudant use definition".to_string(),
+                        )
+                        .with_source(
                             source_name,
                             use_definition.initial_position(),
                             use_definition.final_position(),
@@ -590,7 +586,9 @@ pub fn collect_definitions(
                     if let Some(definition) = duplicate_import_under_alias {
                         let issue = Issue::warning(
                             AnalyzerIssueCode::DuplicateUseDefinitionUnderAlias,
-                            format!("duplicate use definition under alias"),
+                            "duplicate use definition under alias".to_string(),
+                        )
+                        .with_source(
                             source_name,
                             use_definition.initial_position(),
                             use_definition.final_position(),
@@ -607,7 +605,9 @@ pub fn collect_definitions(
                     if let Some((last, redundant_alias)) = redundant_alias {
                         let issue = Issue::note(
                             AnalyzerIssueCode::RedundantUseDefinitionAlias,
-                            format!("redundant use definition alias"),
+                            "redundant use definition alias".to_string(),
+                        )
+                        .with_source(
                             source_name,
                             redundant_alias.initial_position(),
                             redundant_alias.final_position(),
@@ -637,10 +637,8 @@ fn duplicate_item_issue(
     Issue::error(
         AnalyzerIssueCode::DuplicateItemDefinition,
         format!("the item `{}` is defined multiple times", previous.name),
-        source,
-        from,
-        to,
     )
+    .with_source(source, from, to)
     .with_annotation(
         Annotation::secondary(&previous.source, previous.position.0, previous.position.1)
             .with_message(format!(
@@ -662,10 +660,8 @@ fn name_already_in_use(
             "cannot use `{}` because the name is already in use",
             previous.name
         ),
-        source,
-        from,
-        to,
     )
+    .with_source(source, from, to)
     .with_annotation(
         Annotation::secondary(source, previous.position.0, previous.position.1).with_message(
             format!("the name `{}` is already in use here", previous.name),
@@ -680,10 +676,8 @@ fn name_is_reserved(name: &Identifier, source: &str, from: usize, to: usize) -> 
             "cannot use `{}` because the name is a reserved type name",
             name
         ),
-        source,
-        name.initial_position(),
-        name.final_position(),
     )
+    .with_source(source, name.initial_position(), name.final_position())
     .with_annotation(Annotation::secondary(source, from, to))
 }
 
@@ -697,9 +691,18 @@ fn get_name_and_namespace(fqn: &str) -> (String, String) {
 }
 
 fn is_name_reserved(name: &str) -> bool {
-    match name.to_lowercase().as_str() {
-        "iterable" | "void" | "never" | "float" | "bool" | "int" | "string" | "object"
-        | "mixed" | "nonnull" | "resource" => true,
-        _ => false,
-    }
+    matches!(
+        name.to_lowercase().as_str(),
+        "iterable"
+            | "void"
+            | "never"
+            | "float"
+            | "bool"
+            | "int"
+            | "string"
+            | "object"
+            | "mixed"
+            | "nonnull"
+            | "resource"
+    )
 }

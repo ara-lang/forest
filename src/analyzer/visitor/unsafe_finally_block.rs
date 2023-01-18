@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct UnsafeFinallyBlock;
 
 impl UnsafeFinallyBlock {
@@ -20,12 +21,14 @@ impl UnsafeFinallyBlock {
 }
 
 impl Visitor for UnsafeFinallyBlock {
-    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(statement) = downcast::<TryFinallyBlockStatement>(node) {
             if let Some(unsafe_node) = find_unsafe_node(&statement.block) {
                 let issue = Issue::warning(
                     AnalyzerIssueCode::UnsafeFinallyBlock,
                     "unsafe code in finally block",
+                )
+                .with_source(
                     source,
                     unsafe_node.initial_position(),
                     unsafe_node.final_position(),
@@ -53,7 +56,7 @@ fn find_unsafe_node(block: &BlockStatement) -> Option<&dyn Node> {
             Statement::Foreach(statement) => find_unsafe_node(&statement.block),
             Statement::Break(statement) => Some(statement.as_ref() as &dyn Node),
             Statement::Continue(statement) => Some(statement.as_ref() as &dyn Node),
-            Statement::If(statement) => find_unsafe_node_in_if(&statement),
+            Statement::If(statement) => find_unsafe_node_in_if(statement),
             Statement::Using(statement) => find_unsafe_node(&statement.block),
             Statement::Try(statement) => {
                 if let Some(unsafe_node) = find_unsafe_node(&statement.block) {
@@ -82,6 +85,7 @@ fn find_unsafe_node(block: &BlockStatement) -> Option<&dyn Node> {
             },
             Statement::Return(statement) => Some(statement.as_ref() as &dyn Node),
             Statement::Block(block) => find_unsafe_node(block),
+            Statement::Empty(_) => None,
         };
 
         if let Some(unsafe_node) = unsafe_node {
@@ -106,12 +110,12 @@ fn find_unsafe_node_in_if(statement: &IfStatement) -> Option<&dyn Node> {
     if let Some(r#else) = &statement.r#else {
         match &r#else.block {
             IfElseBlockStatement::If(if_statement) => {
-                if let Some(unsafe_node) = find_unsafe_node_in_if(&if_statement) {
+                if let Some(unsafe_node) = find_unsafe_node_in_if(if_statement) {
                     return Some(unsafe_node);
                 }
             }
             IfElseBlockStatement::Block(block) => {
-                if let Some(unsafe_node) = find_unsafe_node(&block) {
+                if let Some(unsafe_node) = find_unsafe_node(block) {
                     return Some(unsafe_node);
                 }
             }

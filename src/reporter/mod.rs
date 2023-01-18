@@ -13,7 +13,7 @@ pub fn report(config: &Configuration, source_map: &SourceMap, report: Report) ->
         return Ok(());
     }
 
-    ReportBuilder::new(source_map, report)
+    ReportBuilder::new(source_map)
         .with_colors({
             config
                 .reporting
@@ -47,7 +47,7 @@ pub fn report(config: &Configuration, source_map: &SourceMap, report: Report) ->
                 })
                 .unwrap_or(DisplayStyle::Default)
         })
-        .eprint()?;
+        .eprint(&report)?;
 
     std::process::exit(1);
 }

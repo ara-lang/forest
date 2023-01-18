@@ -11,6 +11,7 @@ use ara_reporting::issue::Issue;
 use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
+#[derive(Debug, Default)]
 pub struct AwaitInLoop;
 
 impl AwaitInLoop {
@@ -20,17 +21,17 @@ impl AwaitInLoop {
 }
 
 impl Visitor for AwaitInLoop {
-    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &Vec<&dyn Node>) -> Vec<Issue> {
+    fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(expression @ AsyncOperationExpression::Await { .. }) =
             downcast::<AsyncOperationExpression>(node)
         {
             for ancestor in ancestry.iter().rev() {
-                if let Some(_) = downcast::<AnonymousFunctionExpression>(*ancestor) {
+                if downcast::<AnonymousFunctionExpression>(*ancestor).is_some() {
                     // Allow await in anonymous functions
                     break;
                 }
 
-                if let Some(_) = downcast::<ArrowFunctionExpression>(*ancestor) {
+                if downcast::<ArrowFunctionExpression>(*ancestor).is_some() {
                     // Allow await in arrow functions
                     break;
                 }
@@ -51,6 +52,8 @@ impl Visitor for AwaitInLoop {
                             let issue = Issue::note(
                                 AnalyzerIssueCode::DontAwaitInLoop,
                                 "awaiting in a loop is not recommended",
+                            )
+                            .with_source(
                                 source,
                                 expression.initial_position(),
                                 expression.final_position(),
