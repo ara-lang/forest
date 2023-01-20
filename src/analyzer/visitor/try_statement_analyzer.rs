@@ -1,8 +1,9 @@
 use ara_parser::tree::downcast;
 use ara_parser::tree::expression::Expression;
 use ara_parser::tree::statement::block::BlockStatement;
-use ara_parser::tree::statement::control_flow::{IfElseBlockStatement, IfStatement};
-use ara_parser::tree::statement::r#try::TryFinallyBlockStatement;
+use ara_parser::tree::statement::control_flow::IfElseBlockStatement;
+use ara_parser::tree::statement::control_flow::IfStatement;
+use ara_parser::tree::statement::r#try::TryStatement;
 use ara_parser::tree::statement::Statement;
 use ara_parser::tree::Node;
 use ara_reporting::annotation::Annotation;
@@ -12,38 +13,58 @@ use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
 #[derive(Debug, Default)]
-pub struct UnsafeFinallyBlock;
+pub struct TryStatementAnalyzer;
 
-impl UnsafeFinallyBlock {
+impl TryStatementAnalyzer {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Visitor for UnsafeFinallyBlock {
+impl Visitor for TryStatementAnalyzer {
     fn visit(&mut self, source: &str, node: &dyn Node, _ancestry: &[&dyn Node]) -> Vec<Issue> {
-        if let Some(statement) = downcast::<TryFinallyBlockStatement>(node) {
-            if let Some(unsafe_node) = find_unsafe_node(&statement.block) {
-                let issue = Issue::warning(
-                    AnalyzerIssueCode::UnsafeFinallyBlock,
-                    "unsafe code in finally block",
-                )
-                .with_source(
-                    source,
-                    unsafe_node.initial_position(),
-                    unsafe_node.final_position(),
-                )
-                .with_annotation(Annotation::secondary(
-                    source,
-                    statement.initial_position(),
-                    statement.final_position(),
-                ));
-
-                return vec![issue];
+        let mut issues = vec![];
+        if let Some(statement) = downcast::<TryStatement>(node) {
+            match &statement.finally {
+                Some(statement) => {
+                    if let Some(unsafe_node) = find_unsafe_node(&statement.block) {
+                        issues.push(
+                            Issue::warning(
+                                AnalyzerIssueCode::UnsafeFinallyBlock,
+                                "unsafe code in finally block",
+                            )
+                            .with_source(
+                                source,
+                                unsafe_node.initial_position(),
+                                unsafe_node.final_position(),
+                            )
+                            .with_annotation(Annotation::secondary(
+                                source,
+                                statement.initial_position(),
+                                statement.final_position(),
+                            )),
+                        );
+                    }
+                }
+                None => {
+                    if statement.catches.is_empty() {
+                        issues.push(
+                            Issue::error(
+                                AnalyzerIssueCode::TryBlockMustBeFollowedByCatchOrFinally,
+                                "try block must be followed by catch or finally block",
+                            )
+                            .with_source(
+                                source,
+                                statement.initial_position(),
+                                statement.final_position(),
+                            ),
+                        );
+                    }
+                }
             }
         }
 
-        vec![]
+        issues
     }
 }
 

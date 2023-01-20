@@ -18,15 +18,15 @@ use crate::analyzer::issue::AnalyzerIssueCode;
 use crate::analyzer::visitor::Visitor;
 
 #[derive(Debug, Default)]
-pub struct UsingThisOutsideOfClassContext;
+pub struct SelfReferenceAnalyzer;
 
-impl UsingThisOutsideOfClassContext {
+impl SelfReferenceAnalyzer {
     pub fn new() -> Self {
         Self {}
     }
 }
 
-impl Visitor for UsingThisOutsideOfClassContext {
+impl Visitor for SelfReferenceAnalyzer {
     fn visit(&mut self, source: &str, node: &dyn Node, ancestry: &[&dyn Node]) -> Vec<Issue> {
         if let Some(identifier) = downcast::<Identifier>(node) {
             if downcast::<FunctionDefinition>(*ancestry.last().unwrap()).is_some() {

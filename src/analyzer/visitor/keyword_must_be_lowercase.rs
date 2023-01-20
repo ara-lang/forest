@@ -21,7 +21,7 @@ impl Visitor for KeywordMustBeInLowercase {
 
         if let Some(keyword) = downcast::<Keyword>(node) {
             let name = keyword.value.to_string();
-            let lowercase_name = name.to_ascii_lowercase();
+            let lowercase_name = name.to_lowercase();
 
             if lowercase_name != name {
                 issues.push(

@@ -585,7 +585,7 @@ pub fn collect_definitions(
 
                     if let Some(definition) = duplicate_import_under_alias {
                         let issue = Issue::warning(
-                            AnalyzerIssueCode::DuplicateUseDefinitionUnderAlias,
+                            AnalyzerIssueCode::NoDuplicateUseDefinitionUnderAlias,
                             "duplicate use definition under alias".to_string(),
                         )
                         .with_source(
@@ -635,7 +635,7 @@ fn duplicate_item_issue(
     to: usize,
 ) -> Issue {
     Issue::error(
-        AnalyzerIssueCode::DuplicateItemDefinition,
+        AnalyzerIssueCode::NoDuplicateItemDefinition,
         format!("the item `{}` is defined multiple times", previous.name),
     )
     .with_source(source, from, to)
@@ -696,13 +696,24 @@ fn is_name_reserved(name: &str) -> bool {
         "iterable"
             | "void"
             | "never"
-            | "float"
             | "bool"
-            | "int"
             | "string"
             | "object"
             | "mixed"
             | "nonnull"
             | "resource"
+            | "i128"
+            | "int"
+            | "i64"
+            | "i32"
+            | "i16"
+            | "i8"
+            | "uint"
+            | "u32"
+            | "u16"
+            | "u8"
+            | "float"
+            | "f64"
+            | "f32"
     )
 }

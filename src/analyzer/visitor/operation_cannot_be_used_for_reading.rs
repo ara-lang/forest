@@ -36,7 +36,10 @@ impl OperationCannotBeUsedForReading {
             Expression::ArrayOperation(operation) => match operation {
                 ArrayOperationExpression::Push { .. } => vec![Issue::error(
                     AnalyzerIssueCode::ArrayPushOperationCannotBeUsedForReading,
-                    "array push operation cannot be used for reading",
+                    format!(
+                        "{} cannot be used for reading",
+                        expression.get_description()
+                    ),
                 )
                 .with_source(
                     source,
@@ -45,12 +48,12 @@ impl OperationCannotBeUsedForReading {
                 )],
                 ArrayOperationExpression::Unset { item, .. }
                 | ArrayOperationExpression::Isset { item, .. } => {
-                    Self::analyze_expression(source, item, discarded)
+                    Self::analyze_expression(source, item, false)
                 }
                 ArrayOperationExpression::In { item, array, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, item, discarded));
-                    issues.append(&mut Self::analyze_expression(source, array, discarded));
+                    issues.append(&mut Self::analyze_expression(source, item, false));
+                    issues.append(&mut Self::analyze_expression(source, array, false));
 
                     issues
                 }
@@ -59,12 +62,12 @@ impl OperationCannotBeUsedForReading {
             Expression::AsyncOperation(operation) => match &operation {
                 AsyncOperationExpression::Async { expression, .. }
                 | AsyncOperationExpression::Await { expression, .. } => {
-                    Self::analyze_expression(source, expression, discarded)
+                    Self::analyze_expression(source, expression, false)
                 }
                 AsyncOperationExpression::Concurrently { expressions, .. } => {
                     let mut issues = vec![];
                     for expression in &expressions.inner {
-                        issues.append(&mut Self::analyze_expression(source, expression, discarded));
+                        issues.append(&mut Self::analyze_expression(source, expression, false));
                     }
 
                     issues
@@ -78,7 +81,10 @@ impl OperationCannotBeUsedForReading {
                         issues.push(
                             Issue::error(
                                 AnalyzerIssueCode::AssignmentOperationCannotBeUsedForReading,
-                                "assignment operation cannot be used for reading",
+                                format!(
+                                    "{} cannot be used for reading",
+                                    expression.get_description()
+                                ),
                             )
                             .with_source(
                                 source,
@@ -112,7 +118,10 @@ impl OperationCannotBeUsedForReading {
                         issues.push(
                             Issue::error(
                                 AnalyzerIssueCode::AssignmentOperationCannotBeUsedForReading,
-                                "assignment operation cannot be used for reading",
+                                format!(
+                                    "{} cannot be used for reading",
+                                    expression.get_description()
+                                ),
                             )
                             .with_source(
                                 source,
@@ -135,13 +144,13 @@ impl OperationCannotBeUsedForReading {
                 | BitwiseOperationExpression::LeftShift { left, right, .. }
                 | BitwiseOperationExpression::RightShift { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
                 BitwiseOperationExpression::Not { right, .. } => {
-                    Self::analyze_expression(source, right, discarded)
+                    Self::analyze_expression(source, right, false)
                 }
             },
             Expression::ClassOperation(operation) => match &operation {
@@ -149,21 +158,21 @@ impl OperationCannotBeUsedForReading {
                 | ClassOperationExpression::StaticMethodClosureCreation { class, .. }
                 | ClassOperationExpression::StaticPropertyFetch { class, .. }
                 | ClassOperationExpression::ConstantFetch { class, .. } => {
-                    Self::analyze_expression(source, class, discarded)
+                    Self::analyze_expression(source, class, false)
                 }
                 _ => vec![],
             },
             Expression::FunctionOperation(operation) => match &operation {
                 FunctionOperationExpression::Call { function, .. }
                 | FunctionOperationExpression::ClosureCreation { function, .. } => {
-                    Self::analyze_expression(source, function, discarded)
+                    Self::analyze_expression(source, function, false)
                 }
             },
             Expression::CoalesceOperation(operation) => match &operation {
                 CoalesceOperationExpression::Coalesce { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
@@ -179,8 +188,8 @@ impl OperationCannotBeUsedForReading {
                 | ComparisonOperationExpression::GreaterThanOrEqual { left, right, .. }
                 | ComparisonOperationExpression::Spaceship { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
@@ -192,7 +201,10 @@ impl OperationCannotBeUsedForReading {
                         issues.push(
                             Issue::error(
                                 AnalyzerIssueCode::ThrowExpressionCannotBeUsedForReading,
-                                "throw expression cannot be used for reading",
+                                format!(
+                                    "{} cannot be used for reading",
+                                    expression.get_description()
+                                ),
                             )
                             .with_source(
                                 source,
@@ -202,7 +214,7 @@ impl OperationCannotBeUsedForReading {
                         );
                     }
 
-                    issues.append(&mut Self::analyze_expression(source, value, discarded));
+                    issues.append(&mut Self::analyze_expression(source, value, false));
 
                     issues
                 }
@@ -210,12 +222,12 @@ impl OperationCannotBeUsedForReading {
             Expression::GeneratorOperation(operation) => match &operation {
                 GeneratorOperationExpression::YieldValue { value, .. }
                 | GeneratorOperationExpression::YieldFrom { value, .. } => {
-                    Self::analyze_expression(source, value, discarded)
+                    Self::analyze_expression(source, value, false)
                 }
                 GeneratorOperationExpression::YieldKeyValue { key, value, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, key, discarded));
-                    issues.append(&mut Self::analyze_expression(source, value, discarded));
+                    issues.append(&mut Self::analyze_expression(source, key, false));
+                    issues.append(&mut Self::analyze_expression(source, value, false));
 
                     issues
                 }
@@ -225,13 +237,13 @@ impl OperationCannotBeUsedForReading {
                 LogicalOperationExpression::And { left, right, .. }
                 | LogicalOperationExpression::Or { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
                 LogicalOperationExpression::Not { right, .. } => {
-                    Self::analyze_expression(source, right, discarded)
+                    Self::analyze_expression(source, right, false)
                 }
             },
             Expression::ObjectOperation(operation) => match &operation {
@@ -240,7 +252,7 @@ impl OperationCannotBeUsedForReading {
                 | ObjectOperationExpression::MethodCall { object, .. }
                 | ObjectOperationExpression::NullsafeMethodCall { object, .. }
                 | ObjectOperationExpression::MethodClosureCreation { object, .. } => {
-                    Self::analyze_expression(source, object, discarded)
+                    Self::analyze_expression(source, object, false)
                 }
                 _ => vec![],
             },
@@ -248,25 +260,25 @@ impl OperationCannotBeUsedForReading {
                 RangeOperationExpression::Between { from, to, .. }
                 | RangeOperationExpression::BetweenInclusive { from, to, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, from, discarded));
-                    issues.append(&mut Self::analyze_expression(source, to, discarded));
+                    issues.append(&mut Self::analyze_expression(source, from, false));
+                    issues.append(&mut Self::analyze_expression(source, to, false));
 
                     issues
                 }
                 RangeOperationExpression::To { to, .. }
                 | RangeOperationExpression::ToInclusive { to, .. } => {
-                    Self::analyze_expression(source, to, discarded)
+                    Self::analyze_expression(source, to, false)
                 }
                 RangeOperationExpression::From { from, .. } => {
-                    Self::analyze_expression(source, from, discarded)
+                    Self::analyze_expression(source, from, false)
                 }
                 _ => vec![],
             },
             Expression::StringOperation(operation) => match &operation {
                 StringOperationExpression::Concat { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
@@ -277,7 +289,7 @@ impl OperationCannotBeUsedForReading {
                 | TypeOperationExpression::Instanceof { left, .. }
                 | TypeOperationExpression::Into { left, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
 
                     issues
                 }
@@ -290,9 +302,9 @@ impl OperationCannotBeUsedForReading {
                     ..
                 } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, condition, discarded));
-                    issues.append(&mut Self::analyze_expression(source, if_true, discarded));
-                    issues.append(&mut Self::analyze_expression(source, if_false, discarded));
+                    issues.append(&mut Self::analyze_expression(source, condition, false));
+                    issues.append(&mut Self::analyze_expression(source, if_true, false));
+                    issues.append(&mut Self::analyze_expression(source, if_false, false));
 
                     issues
                 }
@@ -307,8 +319,8 @@ impl OperationCannotBeUsedForReading {
                     ..
                 } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, condition, discarded));
-                    issues.append(&mut Self::analyze_expression(source, if_false, discarded));
+                    issues.append(&mut Self::analyze_expression(source, condition, false));
+                    issues.append(&mut Self::analyze_expression(source, if_false, false));
 
                     issues
                 }
@@ -316,22 +328,20 @@ impl OperationCannotBeUsedForReading {
             Expression::Match(expression) => {
                 let mut issues = vec![];
                 if let Some(expression) = &expression.expression {
-                    issues.append(&mut Self::analyze_expression(source, expression, discarded));
+                    issues.append(&mut Self::analyze_expression(source, expression, false));
                 }
 
                 for arm in &expression.body.arms.inner {
                     if let MatchArmConditionExpression::Expressions(expressions) = &arm.condition {
                         for expression in &expressions.inner {
-                            issues.append(&mut Self::analyze_expression(
-                                source, expression, discarded,
-                            ));
+                            issues.append(&mut Self::analyze_expression(source, expression, false));
                         }
                     }
 
                     issues.append(&mut Self::analyze_expression(
                         source,
                         &arm.expression,
-                        discarded,
+                        false,
                     ));
                 }
 
@@ -340,11 +350,7 @@ impl OperationCannotBeUsedForReading {
             Expression::Vec(vector) => {
                 let mut issues = vec![];
                 for element in &vector.elements.inner {
-                    issues.append(&mut Self::analyze_expression(
-                        source,
-                        &element.value,
-                        discarded,
-                    ));
+                    issues.append(&mut Self::analyze_expression(source, &element.value, false));
                 }
 
                 issues
@@ -352,16 +358,8 @@ impl OperationCannotBeUsedForReading {
             Expression::Dict(dictionary) => {
                 let mut issues = vec![];
                 for element in &dictionary.elements.inner {
-                    issues.append(&mut Self::analyze_expression(
-                        source,
-                        &element.key,
-                        discarded,
-                    ));
-                    issues.append(&mut Self::analyze_expression(
-                        source,
-                        &element.value,
-                        discarded,
-                    ));
+                    issues.append(&mut Self::analyze_expression(source, &element.key, false));
+                    issues.append(&mut Self::analyze_expression(source, &element.value, false));
                 }
 
                 issues
@@ -369,7 +367,7 @@ impl OperationCannotBeUsedForReading {
             Expression::Tuple(tuple) => {
                 let mut issues = vec![];
                 for element in &tuple.elements.inner {
-                    issues.append(&mut Self::analyze_expression(source, element, discarded));
+                    issues.append(&mut Self::analyze_expression(source, element, false));
                 }
 
                 issues
@@ -381,7 +379,10 @@ impl OperationCannotBeUsedForReading {
                     issues.push(
                         Issue::error(
                             AnalyzerIssueCode::ExitExpressionCannotBeUsedForReading,
-                            "exit expression cannot be used for reading",
+                            format!(
+                                "{} cannot be used for reading",
+                                expression.get_description()
+                            ),
                         )
                         .with_source(
                             source,
@@ -395,7 +396,7 @@ impl OperationCannotBeUsedForReading {
                     value: Some(value), ..
                 } = construct
                 {
-                    issues.append(&mut Self::analyze_expression(source, value, discarded));
+                    issues.append(&mut Self::analyze_expression(source, value, false));
                 }
 
                 issues
@@ -408,8 +409,8 @@ impl OperationCannotBeUsedForReading {
                 | ArithmeticOperationExpression::Modulo { left, right, .. }
                 | ArithmeticOperationExpression::Exponentiation { left, right, .. } => {
                     let mut issues = vec![];
-                    issues.append(&mut Self::analyze_expression(source, left, discarded));
-                    issues.append(&mut Self::analyze_expression(source, right, discarded));
+                    issues.append(&mut Self::analyze_expression(source, left, false));
+                    issues.append(&mut Self::analyze_expression(source, right, false));
 
                     issues
                 }
@@ -417,11 +418,11 @@ impl OperationCannotBeUsedForReading {
                 | ArithmeticOperationExpression::Positive { right, .. }
                 | ArithmeticOperationExpression::PreIncrement { right, .. }
                 | ArithmeticOperationExpression::PreDecrement { right, .. } => {
-                    Self::analyze_expression(source, right, discarded)
+                    Self::analyze_expression(source, right, false)
                 }
                 ArithmeticOperationExpression::PostIncrement { left, .. }
                 | ArithmeticOperationExpression::PostDecrement { left, .. } => {
-                    Self::analyze_expression(source, left, discarded)
+                    Self::analyze_expression(source, left, false)
                 }
             },
             _ => vec![],

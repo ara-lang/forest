@@ -1,9 +1,5 @@
 use ara_parser::tree::downcast;
-use ara_parser::tree::expression::operator::ArrayOperationExpression;
 use ara_parser::tree::expression::operator::AssignmentOperationExpression;
-use ara_parser::tree::expression::operator::ClassOperationExpression;
-use ara_parser::tree::expression::operator::ObjectOperationExpression;
-use ara_parser::tree::expression::Expression;
 use ara_parser::tree::Node;
 use ara_reporting::issue::Issue;
 
@@ -59,17 +55,5 @@ fn is_left_unwriteable(expression: &AssignmentOperationExpression) -> bool {
         | AssignmentOperationExpression::Coalesce { left, .. } => left.as_ref(),
     };
 
-    !is_expression_writable(left_expression)
-}
-
-fn is_expression_writable(expression: &Expression) -> bool {
-    match expression {
-        Expression::Variable(_) => true,
-        Expression::ObjectOperation(ObjectOperationExpression::PropertyFetch { .. }) => true,
-        Expression::ClassOperation(ClassOperationExpression::StaticPropertyFetch { .. }) => true,
-        Expression::ArrayOperation(ArrayOperationExpression::Push { .. }) => true,
-        Expression::ArrayOperation(ArrayOperationExpression::Access { .. }) => true,
-        Expression::Tuple(tuple) => tuple.elements.inner.iter().all(is_expression_writable),
-        _ => false,
-    }
+    !left_expression.is_writable()
 }

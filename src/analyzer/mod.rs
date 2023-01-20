@@ -9,25 +9,21 @@ use crate::analyzer::code_info::definition_reference_storage::DefinitionReferenc
 use crate::analyzer::visitor::assign_to_this::AssignToThis;
 use crate::analyzer::visitor::assign_to_unwriteable_expression::AssignToUnwriteableExpression;
 use crate::analyzer::visitor::await_in_loop::AwaitInLoop;
-use crate::analyzer::visitor::builtin_types_generic_arguments_count::BuiltinTypesGenericArgumentsCount;
-use crate::analyzer::visitor::default_for_variadic::DefaultForVariadic;
 use crate::analyzer::visitor::definition_collector::DefinitionCollector;
 use crate::analyzer::visitor::discard_operation::DiscardOperation;
-use crate::analyzer::visitor::duplicate_parameter::DuplicateParameter;
 use crate::analyzer::visitor::invalid_operand_for_arithmetic_operation::InvalidArthmeticOperation;
 use crate::analyzer::visitor::keyword_must_be_lowercase::KeywordMustBeInLowercase;
+use crate::analyzer::visitor::modifier_group_definition_analyzer::ModifierGroupDefinitionAnalyzer;
 use crate::analyzer::visitor::naming_convention::NamingConvention;
 use crate::analyzer::visitor::operation_cannot_be_used_for_reading::OperationCannotBeUsedForReading;
-use crate::analyzer::visitor::parameters_after_variadic::ParametersAfterVariadic;
-use crate::analyzer::visitor::required_parameter_after_optional::RequiredParameterAfterOptional;
-use crate::analyzer::visitor::return_from_constructor::ReturnFromConstructor;
-use crate::analyzer::visitor::return_from_never_function::ReturnFromNeverFunction;
-use crate::analyzer::visitor::return_from_void_function::ReturnFromVoidFunction;
-use crate::analyzer::visitor::standalone_block_statement::StandaloneBlockStatement;
+use crate::analyzer::visitor::parameters_analyzer::ParamteresAnalyzer;
+use crate::analyzer::visitor::return_statement_analyzer::ReturnStatementAnalyzer;
+use crate::analyzer::visitor::self_reference_analyzer::SelfReferenceAnalyzer;
 use crate::analyzer::visitor::ternary_operation_should_be_an_if_statement::TernaryOperationShouldBeAnIfStatement;
+use crate::analyzer::visitor::try_statement_analyzer::TryStatementAnalyzer;
+use crate::analyzer::visitor::type_definition_analyzer::TypeDefinitionAnalyzer;
 use crate::analyzer::visitor::unreachable_code::UnreachableCode;
-use crate::analyzer::visitor::unsafe_finally_block::UnsafeFinallyBlock;
-use crate::analyzer::visitor::using_this_outside_of_class_scope::UsingThisOutsideOfClassContext;
+use crate::analyzer::visitor::unsupported_features_analyzer::UnsupportedFeaturesAnalyzer;
 use crate::config::Configuration;
 use crate::error::Result;
 
@@ -60,26 +56,22 @@ impl<'a> Analyzer<'a> {
             tree_map,
             vec![
                 Box::new(&mut NamingConvention::new()),
-                Box::new(&mut RequiredParameterAfterOptional::new()),
+                Box::new(&mut ParamteresAnalyzer::new()),
                 Box::new(&mut AwaitInLoop::new()),
                 Box::new(&mut DiscardOperation::new()),
                 Box::new(&mut TernaryOperationShouldBeAnIfStatement::new()),
                 Box::new(&mut OperationCannotBeUsedForReading::new()),
                 Box::new(&mut UnreachableCode::new()),
                 Box::new(&mut InvalidArthmeticOperation::new()),
-                Box::new(&mut ReturnFromConstructor::new()),
+                Box::new(&mut ReturnStatementAnalyzer::new()),
                 Box::new(&mut AssignToThis::new()),
                 Box::new(&mut AssignToUnwriteableExpression::new()),
-                Box::new(&mut StandaloneBlockStatement::new()),
-                Box::new(&mut UsingThisOutsideOfClassContext::new()),
-                Box::new(&mut UnsafeFinallyBlock::new()),
-                Box::new(&mut BuiltinTypesGenericArgumentsCount::new()),
-                Box::new(&mut ParametersAfterVariadic::new()),
-                Box::new(&mut DefaultForVariadic::new()),
-                Box::new(&mut ReturnFromVoidFunction::new()),
-                Box::new(&mut ReturnFromNeverFunction::new()),
-                Box::new(&mut DuplicateParameter::new()),
+                Box::new(&mut UnsupportedFeaturesAnalyzer::new()),
+                Box::new(&mut SelfReferenceAnalyzer::new()),
                 Box::new(&mut KeywordMustBeInLowercase::new()),
+                Box::new(&mut TryStatementAnalyzer::new()),
+                Box::new(&mut ModifierGroupDefinitionAnalyzer::new()),
+                Box::new(&mut TypeDefinitionAnalyzer::new()),
                 Box::new(&mut collector),
             ],
         )?;

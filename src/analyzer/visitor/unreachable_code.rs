@@ -23,24 +23,32 @@ impl UnreachableCode {
     fn analyze_expression(source: &str, expression: &Expression) -> Option<Annotation> {
         let mut found_unreachable = None;
         match expression {
-            Expression::ExceptionOperation(ExceptionOperationExpression::Throw { .. }) => {
+            Expression::ExceptionOperation(
+                expression @ ExceptionOperationExpression::Throw { .. },
+            ) => {
                 found_unreachable = Some(
                     Annotation::secondary(
                         source,
                         expression.initial_position(),
                         expression.final_position(),
                     )
-                    .with_message("any code following this expression is unreachable"),
+                    .with_message(format!(
+                        "any code following this {} is unreachable",
+                        expression.get_description()
+                    )),
                 );
             }
-            Expression::ExitConstruct(_) => {
+            Expression::ExitConstruct(expression) => {
                 found_unreachable = Some(
                     Annotation::secondary(
                         source,
                         expression.initial_position(),
                         expression.final_position(),
                     )
-                    .with_message("any code following this expression is unreachable"),
+                    .with_message(format!(
+                        "any code following this {} is unreachable",
+                        expression.get_description()
+                    )),
                 );
             }
             Expression::Parenthesized(expression) => {
@@ -55,34 +63,43 @@ impl UnreachableCode {
     fn analyze_statement(source: &str, statement: &Statement) -> Option<Annotation> {
         let mut found_unreachable = None;
         match statement {
-            Statement::Break(_) => {
+            Statement::Break(statement) => {
                 found_unreachable = Some(
                     Annotation::secondary(
                         source,
                         statement.initial_position(),
                         statement.final_position(),
                     )
-                    .with_message("any code following this statement is unreachable"),
+                    .with_message(format!(
+                        "any code following this {} is unreachable",
+                        statement.get_description()
+                    )),
                 );
             }
-            Statement::Continue(_) => {
+            Statement::Continue(statement) => {
                 found_unreachable = Some(
                     Annotation::secondary(
                         source,
                         statement.initial_position(),
                         statement.final_position(),
                     )
-                    .with_message("any code following this statement is unreachable"),
+                    .with_message(format!(
+                        "any code following this {} is unreachable",
+                        statement.get_description()
+                    )),
                 );
             }
-            Statement::Return(_) => {
+            Statement::Return(statement) => {
                 found_unreachable = Some(
                     Annotation::secondary(
                         source,
                         statement.initial_position(),
                         statement.final_position(),
                     )
-                    .with_message("any code following this statement is unreachable"),
+                    .with_message(format!(
+                        "any code following this {} is unreachable",
+                        statement.get_description()
+                    )),
                 );
             }
             Statement::Expression(expression) => {
@@ -90,6 +107,15 @@ impl UnreachableCode {
             }
             Statement::Block(block) => {
                 for statement in block.statements.iter() {
+                    if let Some(unreachable) = Self::analyze_statement(source, statement) {
+                        found_unreachable = Some(unreachable);
+
+                        break;
+                    }
+                }
+            }
+            Statement::Using(statement) => {
+                for statement in statement.block.statements.iter() {
                     if let Some(unreachable) = Self::analyze_statement(source, statement) {
                         found_unreachable = Some(unreachable);
 
