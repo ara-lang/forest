@@ -1,21 +1,17 @@
-# Ara
+# Ara Forest
 
-[![Actions Status](https://github.com/ara-lang/ara/workflows/ci/badge.svg)](https://github.com/ara-lang/ara/actions)
-[![Crates.io](https://img.shields.io/crates/v/ara_lang.svg)](https://crates.io/crates/ara_lang)
-[![Docs](https://docs.rs/ara_lang/badge.svg)](https://docs.rs/ara_lang/latest/ara_lang/)
+[![Actions Status](https://github.com/ara-lang/forest/workflows/ci/badge.svg)](https://github.com/ara-lang/forest/actions)
+[![Crates.io](https://img.shields.io/crates/v/ara_forest.svg)](https://crates.io/crates/ara_forest)
+[![Docs](https://docs.rs/ara_forest/badge.svg)](https://docs.rs/ara_forest/latest/ara_forest/)
 
-Linter, Type Checker, and Static Analyzer for Ara Programming Language 🐦
-
-> **Warning**: This project is still in early development, and is not ready for production use.
->
-> Please use at your own risk, and expect breaking changes.
+A cached, multi-threaded parsing library for Ara Programming Language 🍃
 
 ## Installation
 
 ### Using Cargo
 
 ```bash
-cargo install ara_lang
+cargo install ara_forest
 ```
 
 ## License

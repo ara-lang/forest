@@ -1,28 +1,24 @@
 [package]
-name = "ara"
+name = "ara_forest"
 version = "0.0.0"
 edition = "2021"
-description = "Linter, Type Checker, Static Analyzer, and Transpiler for Ara Programming Language 🐦"
+description = "A cached, multi-threaded parsing library for Ara Programming Language 🍃"
 readme = "README.md"
-repository = "https://github.com/ara-lang/ara"
-documentation = "https://docs.rs/ara"
+repository = "https://github.com/ara-lang/forest"
+documentation = "https://docs.rs/ara_forest"
 homepage = "https://ara-lang.io"
 exclude = ["/.github/*"]
 authors = ["Saif Eddin Gmati <azjezz@protonmail.com>"]
 license = "MIT OR Apache-2.0"
-keywords = ["ara", "php", "programming-language", "static-analysis", "linter", "transpiler"]
+keywords = ["ara", "php", "programming-language", "parser"]
 categories = ["compilers", "development-tools::build-utils"]
 
 [dependencies]
 ara_parser = { version = "0.6.0" }
 ara_source = { version = "0.2.0" }
 ara_reporting = { version = "0.6.0" }
-clap = { version = "4.0.32", features = ["unicode", "wrap_help"] }
-serde_derive = "1.0.152"
-config = "0.13.3"
 serde = { version = "1.0.152", features = ["derive"] }
-inflections = "1.1.1"
-rustc-hash = "1.1.0"
+num_cpus = { version = "1.15.0"}
 
 [profile.release]
 opt-level = 3
