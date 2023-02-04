@@ -14,7 +14,7 @@ keywords = ["ara", "php", "programming-language", "parser"]
 categories = ["compilers", "development-tools::build-utils"]
 
 [dependencies]
-ara_parser = { path = "../ara-parser" }
+ara_parser = { version = "0.6.4" }
 ara_source = { version = "0.2.0" }
 ara_reporting = { version = "0.6.1" }
 serde = { version = "1.0.152", features = ["derive"] }
