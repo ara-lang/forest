@@ -1,0 +1,71 @@
+readonly readonly class TestOne {}
+
+final abstract class TestTwo {}
+
+abstract final class TestThree {}
+
+class TestFour {
+    public public const int A = 1;
+    public private const int  B = 2;
+    public protected const int  C = 3;
+    final private const int  D = 4;
+}
+
+final class TestFive {
+    final public const int  D = 4;
+}
+
+class TestSix {
+    public public int $a = 1;
+    public private int $b = 2;
+    public protected int $c = 3;
+    final public int $d = 4;
+    abstract public int $d = 4;
+    public readonly static int $e;
+    public static readonly int $f;
+    public readonly int $g = 1;
+}
+
+readonly class TestSeven {
+    public readonly string $a;
+}
+
+class TestEight {
+    public static function __construct() {}
+
+    public static function __invoke(): void {}
+
+    public static function __destruct(): void {}
+}
+
+abstract class TestNine {
+    public abstract static function __construct();
+
+    public abstract static function __invoke(): void;
+
+    public abstract static function __destruct(): void;
+}
+
+class TestTen {
+    public abstract function foo(): void {
+        try {
+
+        }
+
+        using {
+
+        }
+    }
+
+    final private function baz(): void;
+}
+
+abstract class TestEleven {
+    public final abstract function foo(): void;
+    public abstract final function bar(): void;
+    private abstract function baz(): void;
+}
+
+final class TestTwelve {
+    final public function foo(): void {}
+}
