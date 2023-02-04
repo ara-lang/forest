@@ -25,7 +25,7 @@ pub(crate) mod tree;
 
 pub(crate) const ARA_SOURCE_EXTENSION: &str = "ara";
 pub(crate) const ARA_DEFINITION_EXTENSION: &str = "d.ara";
-pub(crate) const ARA_CACHED_SOURCE_EXTENSION: &str = "c.ara";
+pub(crate) const ARA_CACHED_SOURCE_EXTENSION: &str = "ara.cache";
 
 #[derive(Debug)]
 pub struct Forest {
@@ -69,6 +69,10 @@ impl<'a> Parser<'a> {
                 let files = SourceFilesCollector::new(self.config)
                     .collect()
                     .map_err(|error| Box::new(error.into()))?;
+
+                if files.is_empty() {
+                    return Ok((Vec::new(), Vec::new()));
+                }
 
                 let threads_count = self.threads_count(files.len());
                 let chunks = files

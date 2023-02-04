@@ -31,9 +31,10 @@ fn test_parsing_empty_project() {
 
     let config = Config::new(root).with_source("src");
 
-    Parser::new(&config)
-        .parse()
-        .expect_err("Expected an error, but got a Forest object");
+    let forest = Parser::new(&config).parse().unwrap();
+
+    assert!(forest.source.sources.is_empty());
+    assert!(forest.tree.trees.is_empty());
 }
 
 #[test]

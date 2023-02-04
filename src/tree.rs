@@ -71,7 +71,7 @@ impl<'a> TreeBuilder<'a> {
 
     fn get_from_cache(&self, source: &Source, cached_file_path: &PathBuf) -> Result<Tree, Error> {
         let origin = source.origin.clone().unwrap();
-        let definitions = self.serializer.decode(&fs::read(cached_file_path)?)?;
+        let definitions = self.serializer.deserialize(&fs::read(cached_file_path)?)?;
 
         log::info!(
             "loaded ({}) source from cache ({}).",
@@ -84,7 +84,7 @@ impl<'a> TreeBuilder<'a> {
 
     fn save_to_cache(&self, cached_file_path: &PathBuf, tree: &Tree) -> Result<(), Error> {
         let mut file = File::create(cached_file_path)?;
-        let encoded = self.serializer.encode(&tree.definitions)?;
+        let encoded = self.serializer.serialize(&tree.definitions)?;
         file.write_all(&encoded)?;
 
         log::info!(

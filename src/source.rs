@@ -3,7 +3,6 @@ use walkdir::WalkDir;
 
 use crate::config::Config;
 use crate::error::Error;
-use crate::ARA_DEFINITION_EXTENSION;
 use crate::ARA_SOURCE_EXTENSION;
 
 #[derive(Debug)]
@@ -32,19 +31,11 @@ impl<'a> SourceFilesCollector<'a> {
             for entry in WalkDir::new(path) {
                 let entry = entry?;
                 if entry.file_type().is_file()
-                    && entry.path().extension().map_or(false, |ext| {
-                        ext == ARA_SOURCE_EXTENSION || ext == ARA_DEFINITION_EXTENSION
-                    })
+                    && entry.path().extension() == Some(ARA_SOURCE_EXTENSION.as_ref())
                 {
                     files.push(entry.into_path());
                 }
             }
-        }
-
-        if files.is_empty() {
-            return Err(Error::InvalidPath(
-                "no source files found. Please check your source path.".into(),
-            ));
         }
 
         Ok(files)
