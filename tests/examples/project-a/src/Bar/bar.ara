@@ -1,0 +1,23 @@
+class FOO {
+    public string $BAR;
+
+    PUBLIC function BAZ(): STRING {
+        $this->BAR
+    }
+}
+
+function helloWorld(): void {}
+
+const int foo = 1;
+
+type hello_world = Stringable|'hello, world!';
+
+function f(): void {
+    using {
+
+    }
+
+    using if $x {
+
+    }
+}

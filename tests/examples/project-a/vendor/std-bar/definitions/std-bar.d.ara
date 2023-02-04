@@ -1,0 +1,27 @@
+const int PHP_INT_MIN = -9223372036854775808;
+const int PHP_INT_MAX = 9223372036854775807;
+
+function strlen(string $string): int {}
+
+function strpos(string $haystack, string $needle, int $offset = 0): int {}
+
+function substr(string $string, int $start, ?int $length = null): string {}
+
+function chr(int $ascii): string {}
+
+function ord(string $string): int {}
+
+const int COUNT_NORMAL = 0;
+const int COUNT_RECURSIVE = 1;
+
+function count(vec<mixed>|dict<string|int, mixed> $value, int $mode = COUNT_NORMAL): int {}
+
+function array_key_exists(string|int $key, dict<string|int, mixed>|vec<mixed> $search): bool {}
+
+function array_keys(dict<string|int, mixed>|vec<mixed> $search): vec<string|int> {}
+
+function array_values<T>(dict<string|int, T>|vec<T> $search): vec<T> {}
+
+function array_flip<V as string|int>(dict<string|int, V>|vec<V> $search): dict<V, string|int> {}
+
+function array_merge(vec<mixed>|dict<string|int, mixed> ...$arrays): dict<string|int, mixed> {}

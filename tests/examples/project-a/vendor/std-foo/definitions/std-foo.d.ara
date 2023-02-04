@@ -1,0 +1,67 @@
+final class Closure<I, O> {
+    public function __invoke(/* compiler built-in */): O {}
+
+    public function bindTo<T as object>(T $newthis, class<T> $newscope = null): static {}
+}
+
+function is_callable(mixed $var): bool {}
+
+function is_array(mixed $var): bool {}
+
+function is_bool(mixed $var): bool {}
+
+function is_float(mixed $var): bool {}
+
+function is_int(mixed $var): bool {}
+
+interface ArrayAccess<K, V> {
+    public function offsetExists(K $offset): bool;
+    public function offsetGet(K $offset): V;
+    public function offsetSet(K $offset, V $value): void;
+    public function offsetUnset(K $offset): void;
+}
+
+interface Iterator<K, V> {
+    public function current(): V;
+    public function key(): K;
+    public function next(): void;
+    public function rewind(): void;
+    public function valid(): bool;
+}
+
+interface IteratorAggregate<K, V> {
+    public function getIterator(): Iterator<K, V>;
+}
+
+interface Traversable<K, V> {}
+
+interface Countable {
+    public function count(): int;
+}
+
+interface Serializable {
+    public function serialize(): string;
+    public function unserialize(string $serialized): void;
+}
+
+interface JsonSerializable {
+    public function jsonSerialize(): mixed;
+}
+
+interface Throwable {
+    public function getMessage(): string;
+    public function getCode(): int;
+    public function getFile(): string;
+    public function getLine(): int;
+    public function getTrace(): vec<dict<string, mixed>>;
+    public function getPrevious(): ?Throwable;
+    public function __toString(): string;
+}
+
+class Exception implements Throwable {
+    /* compiler built-in */
+}
+
+class Error implements Throwable {
+    /* compiler built-in */
+}

@@ -1,0 +1,19 @@
+namespace Example;
+
+use Psl\Shell;
+use Psl\Vec;
+use Psl\Str;
+
+function list_directories(string $first, string $second): vec<string> {
+    ($first, $second) = concurrently {
+        Shell\execute('ls', vec[$first]),
+        Shell\execute('ls', vec[$second]),
+    };
+
+    $list = Vec\concat::<string>(
+        Str\split($first, "\n"),
+        Str\split($second, "\n"),
+    );
+
+    Vec\unique($list)
+}

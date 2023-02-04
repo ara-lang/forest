@@ -1,74 +1,135 @@
-use ara_parser::parser;
+use std::fs;
+use std::path::PathBuf;
+use std::thread;
+
+use ara_parser::tree::Tree;
 use ara_parser::tree::TreeMap;
-use ara_source::loader;
+use ara_reporting::Report;
+use ara_source::source::Source;
 use ara_source::SourceMap;
 
 use crate::config::Config;
+use crate::error::Error;
+use crate::hash::FxHasher;
+use crate::serializer::BincodeSerializer;
+use crate::source::SourceFilesCollector;
+use crate::tree::TreeBuilder;
 
 pub mod config;
+pub mod error;
+pub(crate) mod hash;
+pub mod logger;
+pub(crate) mod serializer;
+pub mod source;
+pub(crate) mod tree;
 
+pub(crate) const ARA_SOURCE_EXTENSION: &str = "ara";
+pub(crate) const ARA_DEFINITION_EXTENSION: &str = "d.ara";
+pub(crate) const ARA_CACHED_SOURCE_EXTENSION: &str = "c.ara";
+
+#[derive(Debug)]
 pub struct Forest {
     pub source: SourceMap,
     pub tree: TreeMap,
 }
 
-pub struct Parser {
-    pub config: Config,
+impl Forest {
+    pub fn new(source: SourceMap, tree: TreeMap) -> Self {
+        Self { source, tree }
+    }
 }
 
-impl Parser {
-    pub fn new(config: Config) -> Self {
-        Self { config }
+pub struct Parser<'a> {
+    pub config: &'a Config,
+    tree_builder: TreeBuilder<'a>,
+}
+
+impl<'a> Parser<'a> {
+    pub fn new(config: &'a Config) -> Self {
+        let tree_builder = TreeBuilder::new(
+            config,
+            Box::new(FxHasher::new()),
+            Box::new(BincodeSerializer::new()),
+        );
+
+        Self {
+            config,
+            tree_builder,
+        }
     }
 
-    pub fn parse(&self) -> Result<Forest, String> {
-        let mut threads = Vec::with_capacity(self.config.threads);
+    pub fn parse(&self) -> Result<Forest, Box<Report>> {
+        self.init_logger().map_err(|error| Box::new(error.into()))?;
 
-        let source_map = loader::load_directories(&self.config.root, {
-            let mut directories = self.config.definitions.clone();
-            directories.push(self.config.source.clone());
+        let (sources, trees) =
+            thread::scope(|scope| -> Result<(Vec<Source>, Vec<Tree>), Box<Report>> {
+                self.create_cache_dir()
+                    .map_err(|error| Box::new(error.into()))?;
 
-            directories
-        })
-        .expect("Failed to load source map");
+                let files = SourceFilesCollector::new(self.config)
+                    .collect()
+                    .map_err(|error| Box::new(error.into()))?;
 
-        // split the sources into N chunks, where N is the number of threads
-        let chunk_size = source_map.sources.len() / self.config.threads;
-        let chunks: Vec<Vec<ara_source::source::Source>> = source_map
-            .sources
-            .chunks(chunk_size)
-            .map(|chunk| chunk.to_vec())
-            .collect();
+                let threads_count = self.threads_count(files.len());
+                let chunks = files
+                    .chunks(files.len() / threads_count)
+                    .map(Vec::from)
+                    .collect::<Vec<Vec<PathBuf>>>();
 
-        for chunk in chunks {
-            threads.push(std::thread::spawn(move || {
-                let map = SourceMap::new(chunk);
-                parser::parse_map(&map)
-            }));
+                let mut threads = Vec::with_capacity(threads_count);
+                for chunk in chunks.into_iter() {
+                    threads.push(scope.spawn(
+                        move || -> Result<Vec<(Source, Tree)>, Box<Report>> {
+                            let mut source_tree = Vec::with_capacity(chunk.len());
+                            for source_path in chunk {
+                                let (source, tree) = self
+                                    .tree_builder
+                                    .build(&source_path)
+                                    .map_err(|error| match error {
+                                        Error::ParseError(report) => report,
+                                        _ => Box::new(error.into()),
+                                    })?;
+                                source_tree.push((source, tree));
+                            }
+
+                            Ok(source_tree)
+                        },
+                    ));
+                }
+
+                let mut result = Vec::new();
+                for handle in threads {
+                    result.extend(handle.join().unwrap()?);
+                }
+                let (sources, trees) = result.into_iter().unzip();
+
+                Ok((sources, trees))
+            })?;
+
+        Ok(Forest::new(SourceMap::new(sources), TreeMap::new(trees)))
+    }
+
+    fn threads_count(&self, files_len: usize) -> usize {
+        if self.config.threads > files_len {
+            files_len
+        } else {
+            self.config.threads
+        }
+    }
+
+    fn create_cache_dir(&self) -> Result<(), Error> {
+        if self.config.cache.is_some() {
+            fs::create_dir_all(self.config.cache.as_ref().unwrap())?;
         }
 
-        let mut results = vec![];
-        for thread in threads {
-            results.push(thread.join().unwrap());
+        Ok(())
+    }
+
+    fn init_logger(&self) -> Result<(), Error> {
+        if self.config.logger.is_some() {
+            self.config.logger.as_ref().unwrap().init()?
         }
 
-        todo!("
-            the implementation above is just a placeholder
-
-            the idea is to:
-              1. load the source map
-              2. split the source map into N chunks, where N is the number of threads
-              3. spawn N threads, each of which parses a chunk of the source map
-              4. in each thread, iterate over the sources in the chunk and:
-                first we need to check if the source is present in the cache, if yes, load the cached tree,
-                and check if the hash of the source matches the hash of the cached tree, if yes, return the cached tree,
-                otherwise, parse the source and save the tree to the cache
-                if the source is not present in the cache, parse the source and save the tree to the cache.
-                If the parser failed, return the report immediately and do not continue
-              5. join the threads and collect the results
-                If any of the threads failed, return the report immediately and do not continue
-              6. merge the results into a single forest
-              7. return the forest
-        ");
+        Ok(())
     }
 }
