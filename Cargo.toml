@@ -17,7 +17,6 @@ categories = ["compilers", "development-tools::build-utils"]
 ara_parser = { version = "0.6.5" }
 ara_source = { version = "0.2.0" }
 ara_reporting = { version = "0.6.1" }
-serde = { version = "1.0.152", features = ["derive"] }
 num_cpus = { version = "1.15.0" }
 rustc-hash = { version = "1.1.0" }
 walkdir = { version = "2.3.2" }
