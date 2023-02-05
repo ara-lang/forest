@@ -1,13 +1,12 @@
 use bincode::config;
 use bincode::config::Configuration;
 
-use ara_parser::tree::definition::DefinitionTree;
-
 use crate::error::Error;
+use crate::tree::SignedTree;
 
 pub trait Serializer: Send + Sync {
-    fn serialize(&self, definitions: &DefinitionTree) -> Result<Vec<u8>, Error>;
-    fn deserialize(&self, encoded: &[u8]) -> Result<DefinitionTree, Error>;
+    fn serialize(&self, signed_tree: &SignedTree) -> Result<Vec<u8>, Error>;
+    fn deserialize(&self, data: &[u8]) -> Result<SignedTree, Error>;
 }
 
 pub struct BincodeSerializer {
@@ -23,13 +22,13 @@ impl BincodeSerializer {
 }
 
 impl Serializer for BincodeSerializer {
-    fn serialize(&self, definitions: &DefinitionTree) -> Result<Vec<u8>, Error> {
-        Ok(bincode::encode_to_vec(definitions, self.config)?)
+    fn serialize(&self, tree: &SignedTree) -> Result<Vec<u8>, Error> {
+        Ok(bincode::encode_to_vec(tree, self.config)?)
     }
 
-    fn deserialize(&self, data: &[u8]) -> Result<DefinitionTree, Error> {
-        let (definitions, _): (DefinitionTree, _) = bincode::decode_from_slice(data, self.config)?;
+    fn deserialize(&self, data: &[u8]) -> Result<SignedTree, Error> {
+        let (signed_tree, _): (SignedTree, _) = bincode::decode_from_slice(data, self.config)?;
 
-        Ok(definitions)
+        Ok(signed_tree)
     }
 }
