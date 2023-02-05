@@ -3,8 +3,9 @@ use ara_reporting::Report;
 
 #[derive(Debug)]
 pub enum Error {
-    EncodeError(String),
-    DecodeError(String),
+    CacheMiss,
+    SerializeError(String),
+    DeserializeError(String),
     InvalidPath(String),
     IoError(std::io::Error),
     ParseError(Box<Report>),
@@ -31,13 +32,13 @@ impl From<Error> for Report {
 
 impl From<bincode::error::EncodeError> for Error {
     fn from(error: bincode::error::EncodeError) -> Self {
-        Error::EncodeError(error.to_string())
+        Error::SerializeError(error.to_string())
     }
 }
 
 impl From<bincode::error::DecodeError> for Error {
     fn from(error: bincode::error::DecodeError) -> Self {
-        Error::DecodeError(error.to_string())
+        Error::DeserializeError(error.to_string())
     }
 }
 
@@ -52,10 +53,11 @@ impl std::fmt::Display for Error {
         match self {
             Error::IoError(error) => write!(f, "io error: {error}"),
             Error::InvalidPath(message) => write!(f, "invalid source: {message}"),
-            Error::EncodeError(message) => write!(f, "encode error: {message}"),
-            Error::DecodeError(message) => write!(f, "decode error: {message}"),
+            Error::SerializeError(message) => write!(f, "serialize error: {message}"),
+            Error::DeserializeError(message) => write!(f, "deserialize error: {message}"),
             Error::ParseError(report) => write!(f, "parse error: {report}"),
             Error::LogError(error) => write!(f, "log error: {error}"),
+            Error::CacheMiss => write!(f, "cache miss"),
         }
     }
 }

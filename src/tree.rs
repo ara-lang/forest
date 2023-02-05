@@ -1,3 +1,5 @@
+use bincode::Decode;
+use bincode::Encode;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -14,6 +16,12 @@ use crate::hash::ContentHasher;
 use crate::serializer::Serializer;
 use crate::ARA_CACHED_SOURCE_EXTENSION;
 use crate::ARA_DEFINITION_EXTENSION;
+
+#[derive(Debug, Hash, Encode, Decode)]
+pub struct SignedTree {
+    pub signature: u64,
+    pub tree: Tree,
+}
 
 pub struct TreeBuilder<'a> {
     config: &'a Config,
@@ -47,12 +55,11 @@ impl<'a> TreeBuilder<'a> {
         }
 
         let cached_file_path = self.get_cached_file_path(source);
-
         let tree = self.get_from_cache(source, &cached_file_path).or_else(
             |error| -> Result<Tree, Error> {
-                if let Error::DecodeError(_) = error {
+                if let Error::DeserializeError(_) = error {
                     log::error!(
-                        "error while decoding cached file ({}) for source ({}): {}",
+                        "error while deserializing cached file ({}) for source ({}): {}",
                         self.strip_root(&cached_file_path),
                         source.origin.as_ref().unwrap(),
                         error
@@ -60,9 +67,7 @@ impl<'a> TreeBuilder<'a> {
                 }
 
                 let tree = ara_parser::parser::parse(source).map_err(Error::ParseError)?;
-                self.save_to_cache(&cached_file_path, &tree)?;
-
-                Ok(tree)
+                self.save_to_cache(source, tree, &cached_file_path)
             },
         )?;
 
@@ -70,36 +75,56 @@ impl<'a> TreeBuilder<'a> {
     }
 
     fn get_from_cache(&self, source: &Source, cached_file_path: &PathBuf) -> Result<Tree, Error> {
-        let origin = source.origin.clone().unwrap();
-        let definitions = self.serializer.deserialize(&fs::read(cached_file_path)?)?;
+        let signed_tree = self.serializer.deserialize(&fs::read(cached_file_path)?)?;
+
+        let current_signature = self.hasher.hash(&source.content);
+        if signed_tree.signature != current_signature {
+            log::warn!(
+                "cache miss due to source change ({}).",
+                source.origin.as_ref().unwrap(),
+            );
+
+            return Err(Error::CacheMiss);
+        }
 
         log::info!(
-            "loaded ({}) source from cache ({}).",
-            origin,
+            "loaded ({}) parsed source from cache ({}).",
+            source.origin.as_ref().unwrap(),
             self.strip_root(cached_file_path),
         );
 
-        Ok(Tree::new(origin, definitions))
+        Ok(signed_tree.tree)
     }
 
-    fn save_to_cache(&self, cached_file_path: &PathBuf, tree: &Tree) -> Result<(), Error> {
+    fn save_to_cache(
+        &self,
+        source: &Source,
+        tree: Tree,
+        cached_file_path: &PathBuf,
+    ) -> Result<Tree, Error> {
         let mut file = File::create(cached_file_path)?;
-        let encoded = self.serializer.serialize(&tree.definitions)?;
-        file.write_all(&encoded)?;
+        let signed_tree = SignedTree::new(self.hasher.hash(&source.content), tree);
+
+        let serialized = self.serializer.serialize(&signed_tree)?;
+        file.write_all(&serialized)?;
 
         log::info!(
-            "saved ({}) source to cache ({}).",
-            tree.source,
+            "saved ({}) parsed source to cache ({}).",
+            &signed_tree.tree.source,
             self.strip_root(cached_file_path),
         );
 
-        Ok(())
+        Ok(signed_tree.tree)
     }
 
     fn get_cached_file_path(&self, source: &Source) -> PathBuf {
         let cache_path = self.config.cache.as_ref().unwrap();
         cache_path
-            .join(self.hasher.hash(&source.content).to_string())
+            .join(
+                self.hasher
+                    .hash(source.origin.as_ref().unwrap())
+                    .to_string(),
+            )
             .with_extension(ARA_CACHED_SOURCE_EXTENSION)
     }
 
@@ -119,5 +144,11 @@ impl<'a> TreeBuilder<'a> {
             .map(|path| path.to_string_lossy())
             .unwrap()
             .to_string()
+    }
+}
+
+impl SignedTree {
+    pub fn new(signature: u64, tree: Tree) -> Self {
+        Self { signature, tree }
     }
 }
