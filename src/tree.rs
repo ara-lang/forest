@@ -12,8 +12,6 @@ use ara_source::source::SourceKind;
 
 use crate::config::Config;
 use crate::error::Error;
-use crate::hash::ContentHasher;
-use crate::serializer::Serializer;
 use crate::ARA_CACHED_SOURCE_EXTENSION;
 use crate::ARA_DEFINITION_EXTENSION;
 
@@ -25,21 +23,11 @@ pub struct SignedTree {
 
 pub struct TreeBuilder<'a> {
     config: &'a Config,
-    hasher: Box<dyn ContentHasher>,
-    serializer: Box<dyn Serializer>,
 }
 
 impl<'a> TreeBuilder<'a> {
-    pub fn new(
-        config: &'a Config,
-        hasher: Box<dyn ContentHasher>,
-        serializer: Box<dyn Serializer>,
-    ) -> Self {
-        Self {
-            config,
-            hasher,
-            serializer,
-        }
+    pub fn new(config: &'a Config) -> Self {
+        Self { config }
     }
 
     pub fn build(&self, source_path: &Path) -> Result<(Source, Tree), Error> {
@@ -75,9 +63,12 @@ impl<'a> TreeBuilder<'a> {
     }
 
     fn get_from_cache(&self, source: &Source, cached_file_path: &PathBuf) -> Result<Tree, Error> {
-        let signed_tree = self.serializer.deserialize(&fs::read(cached_file_path)?)?;
+        let signed_tree = self
+            .config
+            .serializer
+            .deserialize(&fs::read(cached_file_path)?)?;
 
-        let current_signature = self.hasher.hash(&source.content);
+        let current_signature = self.config.hasher.hash(&source.content);
         if signed_tree.signature != current_signature {
             log::warn!(
                 "cache miss due to source change ({}).",
@@ -103,9 +94,9 @@ impl<'a> TreeBuilder<'a> {
         cached_file_path: &PathBuf,
     ) -> Result<Tree, Error> {
         let mut file = File::create(cached_file_path)?;
-        let signed_tree = SignedTree::new(self.hasher.hash(&source.content), tree);
+        let signed_tree = SignedTree::new(self.config.hasher.hash(&source.content), tree);
 
-        let serialized = self.serializer.serialize(&signed_tree)?;
+        let serialized = self.config.serializer.serialize(&signed_tree)?;
         file.write_all(&serialized)?;
 
         log::info!(
@@ -121,7 +112,8 @@ impl<'a> TreeBuilder<'a> {
         let cache_path = self.config.cache.as_ref().unwrap();
         cache_path
             .join(
-                self.hasher
+                self.config
+                    .hasher
                     .hash(source.origin.as_ref().unwrap())
                     .to_string(),
             )

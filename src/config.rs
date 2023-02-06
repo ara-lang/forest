@@ -1,8 +1,11 @@
 use std::path::PathBuf;
 
+use crate::hash::ContentHasher;
+use crate::hash::FxHasher;
 use crate::logger::Logger;
+use crate::serializer::BincodeSerializer;
+use crate::serializer::Serializer;
 
-#[derive(Debug)]
 pub struct Config {
     pub root: PathBuf,
     pub source: PathBuf,
@@ -10,6 +13,8 @@ pub struct Config {
     pub cache: Option<PathBuf>,
     pub threads: usize,
     pub logger: Option<Logger>,
+    pub hasher: Box<dyn ContentHasher>,
+    pub serializer: Box<dyn Serializer>,
 }
 
 impl Config {
@@ -21,6 +26,8 @@ impl Config {
             cache: None,
             threads: num_cpus::get(),
             logger: None,
+            hasher: Box::new(FxHasher::new()),
+            serializer: Box::new(BincodeSerializer::new()),
         }
     }
 
