@@ -5,7 +5,6 @@ use crate::config::Config;
 use crate::error::Error;
 use crate::ARA_SOURCE_EXTENSION;
 
-#[derive(Debug)]
 pub struct SourceFilesCollector<'a> {
     config: &'a Config,
 }

@@ -21,6 +21,12 @@ impl BincodeSerializer {
     }
 }
 
+impl Default for BincodeSerializer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Serializer for BincodeSerializer {
     fn serialize(&self, tree: &SignedTree) -> Result<Vec<u8>, Error> {
         Ok(bincode::encode_to_vec(tree, self.config)?)

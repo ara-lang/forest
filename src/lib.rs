@@ -10,8 +10,6 @@ use ara_source::SourceMap;
 
 use crate::config::Config;
 use crate::error::Error;
-use crate::hash::FxHasher;
-use crate::serializer::BincodeSerializer;
 use crate::source::SourceFilesCollector;
 use crate::tree::TreeBuilder;
 
@@ -46,15 +44,9 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(config: &'a Config) -> Self {
-        let tree_builder = TreeBuilder::new(
+        Parser {
             config,
-            Box::new(FxHasher::new()),
-            Box::new(BincodeSerializer::new()),
-        );
-
-        Self {
-            config,
-            tree_builder,
+            tree_builder: TreeBuilder::new(config),
         }
     }
 
